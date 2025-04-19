@@ -220,5 +220,4 @@ Este projeto é licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE
 
 ---
 
->>>>>>> 8a02ef36b1269fd6d4ad3388097ee8ba96cc24a8
 *Desenvolvido por João Paulo Cavalcante - Petrobras, 2025*
