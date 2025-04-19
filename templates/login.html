@@ -1,0 +1,97 @@
+<!-- Crie um arquivo login.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Sistema de Gestão de PTs - Petrobras</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-header">
+      <img src="{{ url_for('static', filename='img/logo-petrobras.png') }}" alt="Petrobras" class="login-logo">
+      <h1>Sistema de Gestão de Permissões de Trabalho</h1>
+    </div>
+    
+    <div class="login-form-container">
+      <div class="login-form-wrapper">
+        <h2>Login</h2>
+        
+        {% if error %}
+        <div class="login-error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+        
+        <form id="loginForm" action="/login" method="post" class="login-form">
+          <div class="form-group">
+            <label for="username">Usuário</label>
+            <div class="form-control">
+              <input type="text" id="username" name="username" required autofocus>
+              <i class="fas fa-user icon"></i>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Senha</label>
+            <div class="form-control">
+              <input type="password" id="password" name="password" required>
+              <i class="fas fa-lock icon"></i>
+            </div>
+          </div>
+          
+          <div class="form-options">
+            <div class="remember-me">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">Lembrar acesso</label>
+            </div>
+            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+          </div>
+          
+          <button type="submit" class="button button-full">
+            <i class="fas fa-sign-in-alt"></i> Entrar
+          </button>
+        </form>
+      </div>
+      
+      <div class="login-info">
+        <div class="info-box">
+          <h3><i class="fas fa-info-circle"></i> Informações</h3>
+          <p>Este sistema é de uso exclusivo para funcionários da Petrobras e prestadores de serviço autorizados.</p>
+          <p>Para acesso, utilize suas credenciais da rede corporativa.</p>
+        </div>
+        
+        <div class="info-box">
+          <h3><i class="fas fa-question-circle"></i> Suporte</h3>
+          <p>Em caso de problemas no acesso, entre em contato com:</p>
+          <ul>
+            <li><i class="fas fa-phone"></i> Ramal: 8800</li>
+            <li><i class="fas fa-envelope"></i> Email: suporte@petrobras.com.br</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="login-footer">
+      <p>Sistema de Gestão de PTs - Petrobras &copy; {{ current_year }}</p>
+      <p>Desenvolvido pela TIC/CEAI</p>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (!username || !password) {
+        event.preventDefault();
+        alert('Por favor, preencha todos os campos.');
+      }
+    });
+  </script>
+</body>
+</html>

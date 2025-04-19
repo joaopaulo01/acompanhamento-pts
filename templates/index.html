@@ -1,0 +1,1025 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de PTs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo-petrobras.png') }}" alt="Petrobras">
+        </div>
+        <div class="header-title">
+            <h1>Sistema de Gestão de Permissões de Trabalho</h1>
+        </div>
+        <div class="user-info">
+            <span id="username">Usuário: </span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h2>Informações</h2>
+            <form id="configForm" method="post" enctype="multipart/form-data" action="{{ url_for('processar_form') }}">
+                <label for="usuario">Usuário:</label>
+                <input type="text" id="usuario" name="usuario" required>
+                
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" required>
+                
+                <label for="empresa">Empresa:</label>
+                <select id="empresa" name="empresa">
+                    <option value="PETROBRAS">PETROBRAS</option>
+                </select>
+                
+                <label for="area">Área ou Gerência:</label>
+                <select id="area" name="area" onchange="atualizarUnidade()">
+                    <option value="GAS NATURAL&ENERGIA">GAS NATURAL&ENERGIA</option>
+                    <option value="REFINO">REFINO</option>
+                </select>
+                
+                <div id="unidadeGasNatural">
+                    <label for="unidadeGas">Unidade:</label>
+                    <select id="unidadeGas" name="unidadeGas">
+                        <option value="UTE-BF">UTE-BF</option>
+                        <option value="UTE-CAN">UTE-CAN</option>
+                        <option value="UTE-CBT">UTE-CBT</option>
+                        <option value="UTE-IBT">UTE-IBT</option>
+                        <option value="UTE-JF">UTE-JF</option>
+                        <option value="UTE-NPI">UTE-NPI</option>
+                        <option value="UTE-SRP">UTE-SRP</option>
+                        <option value="UTE-TBA-TCA">UTE-TBA-TCA</option>
+                        <option value="UTE-TCE">UTE-TCE</option>
+                        <option value="UTE-TLG">UTE-TLG</option>
+                        <option value="UTE-TMA">UTE-TMA</option>
+                        <option value="UTE-TRI">UTE-TRI</option>
+                        <option value="UTE-VLA">UTE-VLA</option>
+                        <option value="UTGC e UTGSUL">UTGC e UTGSUL</option>
+                        <option value="UTGCA">UTGCA</option>
+                        <option value="UTGCAB">UTGCAB</option>
+                        <option value="UTGITB">UTGITB</option>
+                    </select>
+                </div>
+                
+                <div id="unidadeRefino" class="hidden">
+                    <label for="unidadeRef">Unidade:</label>
+                    <select id="unidadeRef" name="unidadeRef">
+                        <option value="FAFEN-BA">FAFEN-BA</option>
+                        <option value="FAFEN-SE">FAFEN-SE</option>
+                        <option value="LUBNOR">LUBNOR</option>
+                        <option value="PROTEGE+">PROTEGE+</option>
+                        <option value="RECAP">RECAP</option>
+                        <option value="REDUC">REDUC</option>
+                        <option value="REFAP">REFAP</option>
+                        <option value="REGAP">REGAP</option>
+                        <option value="REMAN">REMAN</option>
+                        <option value="REPAR">REPAR</option>
+                        <option value="REPLAN">REPLAN</option>
+                        <option value="REVAP">REVAP</option>
+                        <option value="RLAM">RLAM</option>
+                        <option value="RNEST">RNEST</option>
+                        <option value="RPBC">RPBC</option>
+                        <option value="SIX">SIX</option>
+                    </select>
+                </div>
+                
+                <label for="data">Data para emissão:</label>
+                <input type="date" id="data" name="data">
+                
+                <input type="file" id="planilha" name="planilha" accept=".xlsx,.xls">
+                
+                <div id="status"></div>
+                
+                <div>
+                    <button type="button" class="button" onclick="elaborarPTs()">Elaborar PTs</button>
+                    <button type="button" class="button button-blue" onclick="consultarAR()">Consultar AR</button>
+                    <button type="button" class="button button-orange" onclick="elaborarAR()">Elaborar AR</button>
+                </div>
+                
+                <div id="resultado"></div>
+            </form>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('acompanhamento')">Acompanhamento da Programação</button>
+                <button class="tab" onclick="showTab('elaboracao')">Elaboração de AR</button>
+            </div>
+            
+            <div id="acompanhamento" class="tab-content">
+                <div class="gallery" id="galeria">
+                    <!-- Especialidades serão carregadas aqui -->
+                </div>
+                <div class="result" id="resultado-acompanhamento">
+                    <!-- Resultados serão exibidos aqui -->
+                </div>
+            </div>
+            
+            <div id="elaboracao" class="tab-content hidden">
+                <div class="gallery" id="galeria-elaboracao">
+                    <!-- Especialidades serão carregadas aqui para elaboração -->
+                </div>
+                <div class="result" id="resultado-elaboracao">
+                    <!-- Resultados de elaboração serão exibidos aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <div class="loader-text">Processando...</div>
+            <div id="loader-progress-text" class="loader-progress-text">0%</div>
+            <div class="loader-progress-bar">
+            <div id="loader-progress" class="loader-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+    <div id="notification-container" class="notification-container"></div>
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Título do Modal</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                Conteúdo do modal
+            </div>
+            <div class="modal-footer">
+                <button class="button button-outline" id="modal-cancel">Cancelar</button>
+                <button class="button" id="modal-confirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showModal(title, content, confirmCallback, cancelCallback = null) {
+            const modal = document.getElementById('modal-overlay');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const confirmBtn = document.getElementById('modal-confirm');
+            const cancelBtn = document.getElementById('modal-cancel');
+            const closeBtn = document.querySelector('.modal-close');
+            
+            modalTitle.textContent = title;
+  
+            // Limpa o conteúdo anterior
+            modalBody.innerHTML = '';
+            
+            // Se o conteúdo for uma string, insere diretamente
+            if (typeof content === 'string') {
+                modalBody.innerHTML = content;
+            } else {
+                // Se for um elemento DOM, anexa ao corpo
+                modalBody.appendChild(content);
+            }
+            
+            // Configura os callbacks dos botões
+            confirmBtn.onclick = () => {
+                if (confirmCallback) confirmCallback();
+                hideModal();
+            };
+            
+            cancelBtn.onclick = () => {
+                if (cancelCallback) cancelCallback();
+                hideModal();
+            };
+            
+            closeBtn.onclick = () => {
+                if (cancelCallback) cancelCallback();
+                hideModal();
+            };
+            
+            // Mostra o modal
+            modal.classList.add('active');
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    if (cancelCallback) cancelCallback();
+                    hideModal();
+                }
+            }, { once: true });
+        }
+        function hideModal() {
+            const modal = document.getElementById('modal-overlay');
+            modal.classList.remove('active');
+        }
+        function filtrarResultados() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const searchText = document.getElementById('search-order').value.toLowerCase();
+            const rows = document.querySelectorAll('#results-table-body tr');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                const ordem = row.cells[0].textContent.toLowerCase();
+                const descricao = row.cells[1].textContent.toLowerCase();
+                
+                const matchesStatus = statusFilter === 'todos' || status === statusFilter;
+                const matchesSearch = ordem.includes(searchText) || descricao.includes(searchText);
+                
+                if (matchesStatus && matchesSearch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Se não houver resultados, mostrar mensagem
+            const tableBody = document.getElementById('results-table-body');
+            let noResultsRow = document.getElementById('no-results-row');
+            
+            if (visibleCount === 0) {
+                if (!noResultsRow) {
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.id = 'no-results-row';
+                    noResultsRow.innerHTML = `
+                        <td colspan="7" class="no-results">
+                            <i class="fas fa-search"></i>
+                            <h3>Nenhum resultado encontrado</h3>
+                            <p>Tente ajustar os filtros para encontrar o que está procurando.</p>
+                        </td>
+                    `;
+                    tableBody.appendChild(noResultsRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+        
+        function exportarExcel() {
+            showLoader("Exportando dados para Excel...");
+            
+            fetch('/exportar_excel', {
+                method: 'GET'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                hideLoader();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'resultados_pts.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                showNotification('success', 'Excel Exportado', 'Os dados foram exportados com sucesso para Excel.');
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Erro:', error);
+                showNotification('error', 'Erro na Exportação', 'Ocorreu um erro ao exportar os dados para Excel.');
+            });
+        }
+        function voltarDashboard() {
+            window.location.href = '/dashboard';
+        }
+        
+        function viewPT(ordem) {
+            showLoader("Carregando detalhes da PT...");
+            
+            fetch(`/detalhes_pt/${ordem}`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                
+                const detailsContent = document.createElement('div');
+                detailsContent.className = 'pt-details';
+                
+                detailsContent.innerHTML = `
+                    <div class="details-section">
+                        <h4>Informações Gerais</h4>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Ordem</div>
+                                <div class="detail-value">${data.ordem}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Número PT</div>
+                                <div class="detail-value">${data.numero_pt || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Número AR</div>
+                                <div class="detail-value">${data.numero_ar || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data</div>
+                                <div class="detail-value">${data.data}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value">
+                                    <span class="status-badge status-${data.status.toLowerCase()}">${data.status}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="details-section">
+                        <h4>Descrição da Atividade</h4>
+                        <p>${data.descricao}</p>
+                    </div>
+                
+                    <div class="details-section">
+                        <h4>Recomendações</h4>
+                        <p>${data.recomendacoes || 'Nenhuma recomendação específica.'}</p>
+                    </div>
+                `;
+                
+                showModal(`Detalhes da PT - ${data.ordem}`, detailsContent);
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Erro:', error);
+                showNotification('error', 'Erro', 'Não foi possível carregar os detalhes da PT.');
+            });
+        }
+
+        function printPT(ordem) {
+            showLoader("Preparando impressão...");
+            
+            fetch(`/imprimir_pt/${ordem}`, {
+                method: 'GET'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                hideLoader();
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Erro:', error);
+                showNotification('error', 'Erro', 'Não foi possível gerar o PDF para impressão.');
+            });
+        }
+
+        function retryPT(ordem) {
+            showModal(
+                'Tentar Novamente',
+                `<p>Deseja tentar elaborar novamente a PT para a ordem ${ordem}?</p>`,
+                () => {
+                    showLoader("Reprocessando PT...");
+                
+                    fetch(`/reprocessar_pt/${ordem}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        hideLoader();
+                        if (data.success) {
+                            showNotification('success', 'Sucesso', 'A PT foi reprocessada com sucesso!');
+                        // Atualiza a página para mostrar o novo status
+                            window.location.reload();
+                        } else {
+                            showNotification('error', 'Erro', data.message || 'Erro ao reprocessar a PT.');
+                        }
+                    })
+                    .catch(error => {
+                        hideLoader();
+                        console.error('Erro:', error);
+                        showNotification('error', 'Erro', 'Ocorreu um erro ao tentar reprocessar a PT.');
+                    });
+                }
+            );
+        }
+
+        function viewError(ordem) {
+            showLoader("Carregando detalhes do erro...");
+            
+            fetch(`/erro_pt/${ordem}`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                
+                const errorContent = document.createElement('div');
+                errorContent.className = 'error-details';
+                
+                errorContent.innerHTML = `
+                    <div class="error-section">
+                        <h4>Detalhes do Erro</h4>
+                        <div class="error-message">${data.message}</div>
+                        <div class="error-timestamp">Ocorrido em: ${data.timestamp}</div>
+                    </div>
+                    <div class="error-section">
+                        <h4>Log Completo</h4>
+                        <pre class="error-log">${data.log}</pre>
+                    </div>
+                    
+                    <div class="error-section">
+                        <h4>Sugestões</h4>
+                        <ul class="error-suggestions">
+                        ${data.suggestions.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                showModal(`Erro na PT - ${ordem}`, errorContent);
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Erro:', error);
+                showNotification('error', 'Erro', 'Não foi possível carregar os detalhes do erro.');
+            });
+        }
+
+
+        function showLoader(message = "Processando...") {
+            document.getElementById('loader-overlay').classList.add('active');
+            document.querySelector('.loader-text').textContent = message;
+            document.getElementById('loader-progress').style.width = '0%';
+            document.getElementById('loader-progress-text').textContent = '0%';
+        }
+        function updateLoaderProgress(percent, text = null) {
+            document.getElementById('loader-progress').style.width = `${percent}%`;
+            document.getElementById('loader-progress-text').textContent = `${percent}%`;
+            
+            if (text) {
+                document.querySelector('.loader-text').textContent = text;
+            }
+        }
+        function hideLoader() {
+            document.getElementById('loader-overlay').classList.remove('active');
+        }
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+        function showNotification(type, title, message, duration = 5000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            let iconClass;
+            switch (type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-circle'; 
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    break;
+                case 'info':
+                    iconClass = 'ℹ️';
+                    break;
+                default:
+                    iconClass = '?';
+            }
+            
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close">&times;</button>
+            `;
+            
+            container.appendChild(notification);
+            
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                notification.style.animation = 'fade-out 0.3s forwards';
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            });
+            
+            if (duration) {
+                setTimeout(() => {
+                    if (notification.parentNode == container) {
+                        notification.style.animation = 'fade-out 0.3s forwards';
+                        setTimeout(() => {
+                            if (notification.parentNode == container) {
+                                container.removeChild(notification);
+                            }
+                        }, 300);
+                    }
+                }, duration);
+            }
+            
+            return notification;
+        }
+        function atualizarUnidade() {
+            var area = document.getElementById('area').value;
+            if (area === 'GAS NATURAL&ENERGIA') {
+                document.getElementById('unidadeGasNatural').classList.remove('hidden');
+                document.getElementById('unidadeRefino').classList.add('hidden');
+            } else {
+                document.getElementById('unidadeGasNatural').classList.add('hidden');
+                document.getElementById('unidadeRefino').classList.remove('hidden');
+            }
+        }
+        
+        function elaborarPTs() {
+            var formData = new FormData(document.getElementById('configForm'));
+            formData.append('action', 'elaborar_pts');
+            
+            showLoader("Elaborando PTs...");
+            
+            fetch('/processar_form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let progress = 0;
+                    
+                    return new Promise((resolve, reject) => {
+                        function readChunk() {
+                            reader.read().then(({ value, done }) => {
+                                if (done) {
+                                    resolve();
+                                    return;
+                                }
+                                
+                                const chunk = decoder.decode(value, { stream: true });
+                                
+                                try {
+                                    const data = JSON.parse(chunk);
+                                    if (data.progress) {
+                                        progress = data.progress;
+                                        updateLoaderProgress(progress, data.message);
+                                    }
+                                } catch (e) {
+                                    // Não é JSON ou está incompleto, ignorar
+                                }
+                                
+                                readChunk();
+                            }).catch(reject);
+                        }
+                        
+                        readChunk();
+                    });
+                } else {
+                    throw new Error('Resposta do servidor não ok');
+                }
+            })
+            .then(() => {
+                hideLoader();
+                // Atualizar a UI com os resultados
+                window.location.href = '/resultado';
+            })
+              .catch(error => {
+                console.error('Erro:', error);
+                hideLoader();
+                alert('Erro ao processar a solicitação. Por favor, tente novamente.');
+            });
+        }
+
+        
+        function consultarAR() {
+            var formData = new FormData(document.getElementById('configForm'));
+            formData.append('action', 'consultar_ar');
+            
+            fetch('/processar_form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultado').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('resultado').innerText = 'Erro ao processar a solicitação.';
+            });
+        }
+        
+        function elaborarAR() {
+            var formData = new FormData(document.getElementById('configForm'));
+            formData.append('action', 'elaborar_ar');
+            
+            fetch('/processar_form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultado').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('resultado').innerText = 'Erro ao processar a solicitação.';
+            });
+        }
+        
+        function carregarEspecialidades() {
+            fetch('/especialidades')
+            .then(response => response.json())
+            .then(data => {
+                const galeriaDiv = document.getElementById('galeria');
+                const galeriaElaboracaoDiv = document.getElementById('galeria-elaboracao');
+                
+                galeriaDiv.innerHTML = '';
+                galeriaElaboracaoDiv.innerHTML = '';
+                
+                data.especialidades.forEach(esp => {
+                    // Para aba de acompanhamento
+                    const btn = document.createElement('button');
+                    btn.className = 'text-button';
+                    btn.innerText = esp;
+                    btn.onclick = function() { exibirOpcoesOrdem(esp); };
+                    galeriaDiv.appendChild(btn);
+                    
+                    // Para aba de elaboração
+                    const btnElab = document.createElement('button');
+                    btnElab.className = 'text-button';
+                    btnElab.innerText = esp;
+                    btnElab.onclick = function() { exibirAnalisesPendentes(esp); };
+                    galeriaElaboracaoDiv.appendChild(btnElab);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar especialidades:', error);
+            });
+        }
+        
+        function exibirOpcoesOrdem(especialidade) {
+            fetch(`/ordens/${especialidade}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado-acompanhamento');
+                resultadoDiv.innerHTML = '';
+                
+                data.ordens.forEach(ordem => {
+                    const btn = document.createElement('button');
+                    btn.className = 'text-button';
+                    btn.innerText = `Ordem: ${ordem}`;
+                    btn.onclick = function() { mostrarDetalhes(especialidade, ordem); };
+                    resultadoDiv.appendChild(btn);
+                                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar ordens:', error);
+            });
+        }
+        
+        function mostrarDetalhes(especialidade, ordem) {
+            fetch(`/detalhes/${especialidade}/${ordem}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado-acompanhamento');
+                resultadoDiv.innerHTML = '';
+                
+                if (data.detalhes.length > 0) {
+                    data.detalhes.forEach(detalhe => {
+                        // Adiciona a Ordem
+                        const ordemText = document.createElement('h3');
+                        ordemText.innerText = `Ordem: ${detalhe.ordem}`;
+                        resultadoDiv.appendChild(ordemText);
+                        
+                        // Adiciona a Descrição
+                        const descText = document.createElement('p');
+                        descText.innerText = `Descrição da PT: ${detalhe.descricao}`;
+                        resultadoDiv.appendChild(descText);
+                        
+                        // Adiciona LIBRA, ARO e AR
+                        const infoText = document.createElement('p');
+                        infoText.innerText = `LIBRA: ${detalhe.libra}, ARO: ${detalhe.aro}, Análise de Risco: ${detalhe.ar}`;
+                        resultadoDiv.appendChild(infoText);
+                        
+                        // Separador
+                        const divider = document.createElement('hr');
+                        resultadoDiv.appendChild(divider);
+                    });
+                } else {
+                    const noDataText = document.createElement('p');
+                    noDataText.innerText = `Nenhum detalhe encontrado para a Especialidade ${especialidade} e Ordem ${ordem}.`;
+                    resultadoDiv.appendChild(noDataText);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar detalhes:', error);
+            });
+        }
+        
+        function exibirAnalisesPendentes(especialidade) {
+            fetch(`/analises_pendentes/${especialidade}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado-elaboracao');
+                resultadoDiv.innerHTML = '';
+                
+                data.numeros_ar.forEach(numero_ar => {
+                    const btn = document.createElement('button');
+                    btn.className = 'text-button';
+                    btn.innerText = `Número A.R.: ${numero_ar}`;
+                    btn.onclick = function() { mostrarDetalhesElaboracao(especialidade, numero_ar); };
+                    resultadoDiv.appendChild(btn);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar análises pendentes:', error);
+            });
+        }
+        
+        function mostrarDetalhesElaboracao(especialidade, numero_ar) {
+            fetch(`/detalhes_elaboracao/${especialidade}/${numero_ar}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado-elaboracao');
+                resultadoDiv.innerHTML = '';
+                
+                if (data.detalhes.length > 0) {
+                    data.detalhes.forEach(detalhe => {
+                        // Container principal para todos os componentes
+                        const containerPrincipal = document.createElement('div');
+                        
+                        // Adiciona o Número A.R.
+                        const numeroARText = document.createElement('h3');
+                        numeroARText.innerText = `Número A.R.: ${detalhe.numero_ar}`;
+                        containerPrincipal.appendChild(numeroARText);
+                        
+                        // Adiciona a Ordem
+                        const ordemText = document.createElement('h4');
+                        ordemText.innerText = `Ordem: ${detalhe.ordem}`;
+                        containerPrincipal.appendChild(ordemText);
+                        
+                        // Campo para Serviço
+                        const servicoLabel = document.createElement('label');
+                        servicoLabel.innerText = 'Serviço:';
+                        containerPrincipal.appendChild(servicoLabel);
+                        
+                        const servicoInput = document.createElement('input');
+                        servicoInput.type = 'text';
+                        servicoInput.value = detalhe.servico || '';
+                        servicoInput.id = `servico-${detalhe.id}`;
+                        containerPrincipal.appendChild(servicoInput);
+                        
+                        // Campo para Equipamento
+                        const equipamentoLabel = document.createElement('label');
+                        equipamentoLabel.innerText = 'Equipamento:';
+                        containerPrincipal.appendChild(equipamentoLabel);
+                        
+                        const equipamentoInput = document.createElement('input');
+                        equipamentoInput.type = 'text';
+                        equipamentoInput.value = detalhe.equipamento || '';
+                        equipamentoInput.id = `equipamento-${detalhe.id}`;
+                        containerPrincipal.appendChild(equipamentoInput);
+                        
+                        // Dropdown para Executante
+                        const executanteLabel = document.createElement('label');
+                        executanteLabel.innerText = 'Executante:';
+                        containerPrincipal.appendChild(executanteLabel);
+                        
+                        const executanteSelect = document.createElement('select');
+                        executanteSelect.id = `executante-${detalhe.id}`;
+                        ['Executante 1', 'Executante 2'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.text = opt;
+                            if (detalhe.executante === opt) {
+                                option.selected = true;
+                            }
+                            executanteSelect.appendChild(option);
+                        });
+                        containerPrincipal.appendChild(executanteSelect);
+                        
+                        // Dropdown para Operador
+                        const operadorLabel = document.createElement('label');
+                        operadorLabel.innerText = 'Operador:';
+                        containerPrincipal.appendChild(operadorLabel);
+                        
+                        const operadorSelect = document.createElement('select');
+                        operadorSelect.id = `operador-${detalhe.id}`;
+                        ['Operador 1', 'Operador 2'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.text = opt;
+                            if (detalhe.operador === opt) {
+                                option.selected = true;
+                            }
+                            operadorSelect.appendChild(option);
+                        });
+                        containerPrincipal.appendChild(operadorSelect);
+                        
+                        // Dropdown para SMS
+                        const smsLabel = document.createElement('label');
+                        smsLabel.innerText = 'SMS:';
+                        containerPrincipal.appendChild(smsLabel);
+                        
+                        const smsSelect = document.createElement('select');
+                        smsSelect.id = `sms-${detalhe.id}`;
+                        ['SMS 1', 'SMS 2'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.text = opt;
+                            if (detalhe.sms === opt) {
+                                option.selected = true;
+                            }
+                            smsSelect.appendChild(option);
+                        });
+                        containerPrincipal.appendChild(smsSelect);
+                        
+                        // Dropdown para Perigos
+                        const perigoLabel = document.createElement('label');
+                        perigoLabel.innerText = 'Perigos:';
+                        containerPrincipal.appendChild(perigoLabel);
+                        
+                        const perigoSelect = document.createElement('select');
+                        perigoSelect.id = `perigo-${detalhe.id}`;
+                        ['Queda', 'Choque Elétrico', 'Incêndio'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.text = opt;
+                            if (detalhe.perigo === opt) {
+                                option.selected = true;
+                            }
+                            perigoSelect.appendChild(option);
+                        });
+                        containerPrincipal.appendChild(perigoSelect);
+                        
+                        // Botão para mostrar/ocultar as opções
+                        const btnToggleOpcoes = document.createElement('button');
+                        btnToggleOpcoes.className = 'button';
+                        btnToggleOpcoes.innerText = 'Mostrar Opções';
+                        btnToggleOpcoes.onclick = function() {
+                            const containerOpcoes = document.getElementById(`opcoes-${detalhe.id}`);
+                            containerOpcoes.classList.toggle('hidden');
+                            btnToggleOpcoes.innerText = containerOpcoes.classList.contains('hidden') ? 'Mostrar Opções' : 'Ocultar Opções';
+                        };
+                        containerPrincipal.appendChild(btnToggleOpcoes);
+                        
+                        // Container para as opções (checkboxes)
+                        const containerOpcoes = document.createElement('div');
+                        containerOpcoes.id = `opcoes-${detalhe.id}`;
+                        containerOpcoes.className = 'hidden';
+                        
+                        // Lista de perguntas
+                        const perguntas = [
+                            "Falta procedimento específico ou padrão básico de segurança para execução da intervenção ou é necessário alterar o padrão de execução existente?",
+                            "A intervenção é realizada em local não projetado para ocupação humana contínua ou possua meios limitados de entrada e saída ou a ventilação existente é insuficiente para remover contaminantes ou possa existir a deficiência ou enriquecimento de oxigênio?",
+                            "Na intervenção pode haver contato direto com produtos inflamáveis ou tóxicos?",
+                            "A intervenção será realizada em instalação elétrica energizada com tensão igual ou superior a 50Vca ou 120 Vcc de forma não prevista em padrão de execução específico?",
+                            "Na intervenção pode haver contato com partes desprotegidas de equipamento ou com alta temperatura ou pressurizado?",
+                            "No local da intervenção existe mais de uma disciplina de manutenção ou engenharia atuando simultaneamente que acarretem riscos às equipes ou a equipamentos/sistemas vizinhos?",
+                            "A elevação de carga é considerada movimentação crítica conforme padrão PE-1PBR-1428?",
+                            "A intervenção envolve escavações, perfurações, fundações, de forma não prevista no padrão PE-1PBR-01426 - Segurança em Serviços de Escavação e Intervenção no Solo?",
+                            "A intervenção é realizada em local acima de 2m do piso de referência (nível, superfície ou plataforma considerada como nível zero para caracterização do trabalho em altura) de forma não prevista em padrão de execução específico e na NR-35 e expõe o trabalhador a risco de queda?"
+                        ];
+                        
+                        // Adiciona as opções ao container de opções
+                        perguntas.forEach((pergunta, idx) => {
+                            const checkboxRow = document.createElement('div');
+                            
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.id = `opcao-${detalhe.id}-${idx + 1}`;
+                            checkbox.checked = detalhe[`opcao_${idx + 1}`] || false;
+                            
+                            const perguntaLabel = document.createElement('label');
+                            perguntaLabel.htmlFor = `opcao-${detalhe.id}-${idx + 1}`;
+                            perguntaLabel.innerText = pergunta;
+                            
+                            checkboxRow.appendChild(checkbox);
+                            checkboxRow.appendChild(perguntaLabel);
+                            containerOpcoes.appendChild(checkboxRow);
+                        });
+                        
+                        containerPrincipal.appendChild(containerOpcoes);
+                        
+                        // Botão para salvar as alterações
+                        const btnSalvar = document.createElement('button');
+                        btnSalvar.className = 'button';
+                        btnSalvar.innerText = 'Salvar';
+                        btnSalvar.onclick = function() {
+                            // Coletando os valores
+                            const servicoValue = document.getElementById(`servico-${detalhe.id}`).value;
+                            const equipamentoValue = document.getElementById(`equipamento-${detalhe.id}`).value;
+                            const executanteValue = document.getElementById(`executante-${detalhe.id}`).value;
+                            const operadorValue = document.getElementById(`operador-${detalhe.id}`).value;
+                            const smsValue = document.getElementById(`sms-${detalhe.id}`).value;
+                            const perigoValue = document.getElementById(`perigo-${detalhe.id}`).value;
+                            
+                            // Coletando os estados dos checkboxes
+                            const checkboxesValues = {};
+                            perguntas.forEach((_, idx) => {
+                                const checkboxId = `opcao-${detalhe.id}-${idx + 1}`;
+                                checkboxesValues[`opcao_${idx + 1}`] = document.getElementById(checkboxId).checked;
+                            });
+                            
+                            // Enviando os dados para o servidor
+                            fetch('/salvar_alteracoes', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    id: detalhe.id,
+                                    servico: servicoValue,
+                                    equipamento: equipamentoValue,
+                                    executante: executanteValue,
+                                    operador: operadorValue,
+                                    sms: smsValue,
+                                    perigo: perigoValue,
+                                    checkboxes: checkboxesValues
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Alterações salvas com sucesso!');
+                                } else {
+                                    alert('Erro ao salvar alterações: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro:', error);
+                                alert('Erro ao salvar alterações.');
+                            });
+                        };
+                        containerPrincipal.appendChild(btnSalvar);
+                        
+                        resultadoDiv.appendChild(containerPrincipal);
+                        resultadoDiv.appendChild(document.createElement('hr'));
+                    });
+                } else {
+                    const noDataText = document.createElement('p');
+                    noDataText.innerText = `Nenhum detalhe encontrado para a Especialidade ${especialidade} e Número A.R. ${numero_ar}.`;
+                    resultadoDiv.appendChild(noDataText);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar detalhes de elaboração:', error);
+            });
+        }
+        
+        // Inicialização quando o arquivo é carregado
+        document.getElementById('planilha').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('planilha', file);
+                
+                                fetch('/carregar_planilha', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').innerText = data.message;
+                    if (data.success) {
+                        carregarEspecialidades();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    document.getElementById('status').innerText = 'Erro ao carregar o arquivo.';
+                });
+            }
+        });
+        
+        // Executa ao carregar a página
+        atualizarUnidade();
+        
+        // Carregar credenciais salvas, se existirem
+        fetch('/carregar_credenciais')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.usuario) document.getElementById('usuario').value = data.usuario;
+                if (data.empresa) document.getElementById('empresa').value = data.empresa;
+                if (data.area) {
+                    document.getElementById('area').value = data.area;
+                    atualizarUnidade();
+                }
+                if (data.unidade) {
+                    if (data.area === 'GAS NATURAL&ENERGIA') {
+                        document.getElementById('unidadeGas').value = data.unidade;
+                    } else {
+                        document.getElementById('unidadeRef').value = data.unidade;
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar credenciais:', error);
+        });
+    </script>
+</body>
+</html>

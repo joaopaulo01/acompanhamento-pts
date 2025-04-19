@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h2>Elaborar Permissões de Trabalho</h2>
+  </div>
+  
+  <div class="form-container">
+    <form id="configForm" class="config-form">
+      <div class="form-section">
+        <h3>Configurações</h3>
+            
+        <div class="form-row">
+          <div class="form-group">
+            <label for="empresa">Empresa</label>
+            <select id="empresa" name="empresa" required>
+              <option value="PETROBRAS">PETROBRAS</option>
+            </select>
+          </div>
+            
+          <div class="form-group">
+            <label for="area">Área</label>
+            <select id="area" name="area" onchange="atualizarUnidade()" required>
+              <option value="GAS NATURAL&ENERGIA">GAS NATURAL&ENERGIA</option>
+              <option value="REFINO">REFINO</option>
+            </select>
+          </div>
+            
+          <div class="form-group" id="unidadeGasNatural">
+            <label for="unidadeGas">Unidade</label>
+            <select id="unidadeGas" name="unidadeGas" required>
+              <option value="UTE-BF">UTE-BF</option>
+              <option value="UTE-CAN">UTE-CAN</option>
+              <option value="UTE-CBT">UTE-CBT</option>
+              <option value="UTE-IBT">UTE-IBT</option>
+              <option value="UTE-JF">UTE-JF</option>
+              <option value="UTE-NPI">UTE-NPI</option>
+              <option value="UTE-SRP">UTE-SRP</option>
+              <option value="UTE-TBA-TCA">UTE-TBA-TCA</option>
+              <option value="UTE-TCE">UTE-TCE</option>
+              <option value="UTE-TLG">UTE-TLG</option>
+              <option value="UTE-TMA">UTE-TMA</option>
+              <option value="UTE-TRI">UTE-TRI</option>
+              <option value="UTE-VLA">UTE-VLA</option>
+              <option value="UTGC e UTGSUL">UTGC e UTGSUL</option>
+              <option value="UTGCA">UTGCA</option>
+              <option value="UTGCAB">UTGCAB</option>
+              <option value="UTGITB">UTGITB</option>
+            </select>
+          </div>
+
+          <div class="form-group hidden" id="unidadeRefino">
+            <label for="unidadeRef">Unidade</label>
+            <select id="unidadeRef" name="unidadeRef" required>
+              <option value="FAFEN-BA">FAFEN-BA</option>
+              <option value="FAFEN-SE">FAFEN-SE</option>
+              <option value="LUBNOR">LUBNOR</option>
+              <option value="PROTEGE+">PROTEGE+</option>
+              <option value="RECAP">RECAP</option>
+              <option value="REDUC">REDUC</option>
+              <option value="REFAP">REFAP</option>
+              <option value="REGAP">REGAP</option>
+              <option value="REMAN">REMAN</option>
+              <option value="REPAR">REPAR</option>
+              <option value="REPLAN">REPLAN</option>
+              <option value="REVAP">REVAP</option>
+              <option value="RLAM">RLAM</option>
+              <option value="RNEST">RNEST</option>
+              <option value="RPBC">RPBC</option>
+              <option value="SIX">SIX</option>
+            </select>
+          </div>
+        </div>
+            
+        <div class="form-row">
+          <div class="form-group">
+            <label for="usuario">Usuário</label>
+            <input type="text" id="usuario" name="usuario" value="{{ session.get('username', '') }}" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="data">Data</label>
+            <input type="date" id="data" name="data" required>
+          </div>
+        </div>
+      </div>
+          
+      <div class="form-section">
+        <h3>Arquivo de Ordens</h3>
+        
+        <div class="file-input-wrapper">
+          <button type="button" class="file-input-button">
+            <i class="fas fa-file-excel"></i> Selecionar Arquivo
+          </button>
+          <input type="file" id="arquivo" name="arquivo" accept=".xlsx, .xls">
+          <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+        </div>
+        
+        <div class="file-preview" id="filePreview" style="display: none;">
+          <h4>Prévia do Arquivo</h4>
+          <div class="preview-content" id="previewContent"></div>
+        </div>
+      </div>
+          
+      <div class="form-actions">
+        <button type="button" class="button button-outline" onclick="limparFormulario()">
+          <i class="fas fa-eraser"></i> Limpar
+        </button>
+        <button type="button" class="button" onclick="confirmarElaborarPT()">
+          <i class="fas fa-file-signature"></i> Elaborar PTs
+        </button>
+      </div>
+    </form>
+  </div>
+      
+  <div id="resultado" class="resultado-container"></div>
+</div>
+{% endblock %}
+    
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Define a data atual como padrão
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+    
+    // Manipulação do arquivo selecionado
+    const fileInput = document.getElementById('arquivo');
+    const fileName = document.getElementById('fileName');
+    const filePreview = document.getElementById('filePreview');
+    const previewContent = document.getElementById('previewContent');
+      
+    fileInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        fileName.textContent = this.files[0].name;
+          
+          // Aqui você poderia implementar uma prévia do arquivo Excel
+          // Por simplicidade, apenas mostraremos que o arquivo foi selecionado
+        filePreview.style.display = 'block';
+        previewContent.innerHTML = `
+          <div class="preview-info">
+            <p><strong>Nome do arquivo:</strong> ${this.files[0].name}</p>
+            <p><strong>Tamanho:</strong> ${(this.files[0].size / 1024).toFixed(2)} KB</p>
+            <p><strong>Tipo:</strong> ${this.files[0].type || 'Planilha Excel'}</p>
+          </div>
+          <div class="preview-actions">
+            <button type="button" class="button button-small" onclick="visualizarArquivo()">
+              <i class="fas fa-eye"></i> Visualizar
+            </button>
+          </div>
+        `;
+      } else {
+        fileName.textContent = 'Nenhum arquivo selecionado';
+        filePreview.style.display = 'none';
+      }
+    });
+  });
+
+  function limparFormulario() {
+    document.getElementById('configForm').reset();
+    document.getElementById('fileName').textContent = 'Nenhum arquivo selecionado';
+    document.getElementById('filePreview').style.display = 'none';
+    document.getElementById('resultado').innerHTML = '';
+    
+    // Define a data atual como padrão novamente
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  function visualizarArquivo() {
+    const fileInput = document.getElementById('arquivo');
+    if (fileInput.files && fileInput.files[0]) {
+      showNotification('info', 'Visualização', 'A funcionalidade de visualização prévia do Excel será implementada em breve.');
+    }
+  }
+
+  function atualizarUnidade() {
+    var area = document.getElementById('area').value;
+    if (area === 'GAS NATURAL&ENERGIA') {
+      document.getElementById('unidadeGasNatural').classList.remove('hidden');
+      document.getElementById('unidadeRefino').classList.add('hidden');
+    } else {
+      document.getElementById('unidadeGasNatural').classList.add('hidden');
+      document.getElementById('unidadeRefino').classList.remove('hidden');
+    }
+  }
+
+  function confirmarElaborarPT() {
+    // Verificar se as funções necessárias existem
+    console.log("Função confirmarElaborarPT chamada");
+    if (typeof showLoader !== 'function') {
+      console.error("Função showLoader não definida!");
+      alert('Erro interno: função showLoader não definida!');
+      return;
+    }
+    const form = document.getElementById('configForm');
+    if (!form) {
+      console.error("Formulário não encontrado!");
+      showNotification('error', 'Erro', 'Formulário não encontrado!');
+      return;
+    }
+    const formData = new FormData(form);
+    
+    // Validação básica do formulário
+    const usuario = formData.get('usuario');
+    const senha = formData.get('senha');
+    const empresa = formData.get('empresa');
+    const area = formData.get('area');
+    const unidade = formData.get('unidade');
+    const arquivo = document.getElementById('arquivo').files[0];
+
+    console.log("Dados do formulário:", {
+      usuario: usuario ? "preenchido" : "vazio",
+      senha: senha ? "preenchido" : "vazio",
+      empresa: empresa,
+      area: area,
+      unidade: unidade,
+      arquivo: arquivo ? arquivo.name : "não selecionado"
+    });
+    
+    if (!usuario || !senha || !empresa || !area || !unidade) {
+      showNotification('warning', 'Campos Incompletos', 'Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+    
+    if (!arquivo) {
+      showNotification('warning', 'Arquivo Não Selecionado', 'Por favor, selecione um arquivo Excel com as ordens de manutenção.');
+      return;
+    }
+    
+    // Exibe modal de confirmação
+    showModal(
+      'Confirmar Elaboração de PT',
+      `<p>Você está prestes a elaborar Permissões de Trabalho com os seguintes parâmetros:</p>
+      <ul>
+        <li><strong>Empresa:</strong> ${empresa}</li>
+        <li><strong>Área:</strong> ${area}</li>
+        <li><strong>Unidade:</strong> ${unidade}</li>
+        <li><strong>Arquivo:</strong> ${arquivo.name}</li>
+      </ul>
+      <p>Este processo pode levar alguns minutos, dependendo da quantidade de PTs a serem elaboradas.</p>
+      <p>Deseja continuar?</p>`,
+      () => {
+        // Callback de confirmação - inicia a elaboração
+        console.log("Confirmado, chamando elaborarPTs()");
+        elaborarPTs();
+      }
+    );
+  }
+
+  /*function elaborarPTs() {
+    console.log("Função elaborarPTs chamada");
+    const formData = new FormData(document.getElementById('configForm'));
+    formData.append('action', 'elaborar_pts');
+    
+    showLoader("Elaborando PTs...");
+    
+    fetch('/processar_form', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Resposta do servidor não foi OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideLoader();
+        if (data.success) {
+            showNotification('success', 'Sucesso', data.message);
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
+        } else {
+            showNotification('error', 'Erro', data.message);
+        }
+    })
+    .catch(error => {
+        hideLoader();
+        showNotification('error', 'Erro', 'Ocorreu um erro ao processar as permissões de trabalho.');
+        console.error('Erro:', error);
+    });
+  }*/
+  function elaborarPTs() {
+    console.log("Função elaborarPTs chamada");
+    var formData = new FormData(document.getElementById('configForm'));
+    formData.append('action', 'elaborar_pts');
+
+    console.log("FormData contém:");
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+    
+    showLoader("Elaborando PTs...");
+    
+    fetch('/processar_form', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let progress = 0;
+            
+        return new Promise((resolve, reject) => {
+          function readChunk() {
+            reader.read().then(({ value, done }) => {
+              if (done) {
+                resolve();
+                return;
+              }
+              
+              const chunk = decoder.decode(value, { stream: true });
+              
+              try {
+                const data = JSON.parse(chunk);
+                if (data.progress) {
+                  progress = data.progress;
+                  updateLoaderProgress(progress, data.message);
+                }
+              } catch (e) {
+                // Não é JSON ou está incompleto, ignorar
+              }
+                      
+              readChunk();
+            }).catch(reject);
+          }
+                
+          readChunk();
+        });
+      } else {
+        throw new Error('Resposta do servidor não ok');
+      }
+    })
+    .then(data => {
+      console.log("Dados recebidos:", data);
+      hideLoader();
+      
+      if (data.success) {
+        showNotification('success', 'Sucesso', data.message);
+        if (data.redirect) {
+          console.log("Redirecionando para:", data.redirect);
+          window.location.href = data.redirect;
+        }
+      } else {
+        showNotification('error', 'Erro', data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      hideLoader();
+      showNotification('error', 'Erro', 'Ocorreu um erro ao processar as permissões de trabalho.');
+    });
+  }
+  
+</script>
+{% endblock %}

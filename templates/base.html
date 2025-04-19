@@ -1,0 +1,123 @@
+<!-- Crie um arquivo base.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão de PTs - Petrobras</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo-petrobras.png') }}" alt="Petrobras">
+    </div>
+    <div class="header-title">
+      <h1>Sistema de Gestão de Permissões de Trabalho</h1>
+    </div>
+    <div class="user-info">
+      <span id="username">Usuário: {{ session.get('username', 'Visitante') }}</span>
+      {% if session.get('username') %}
+        <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="main-container">
+    <div class="sidebar">
+      <nav class="nav-menu">
+        <a href="/dashboard" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a href="/elaborar_pts" class="nav-item {% if active_page == 'elaborar_pts' %}active{% endif %}">
+            <i class="fas fa-file-signature"></i> Elaborar PTs
+          </a>
+          <a href="/consultar_ar" class="nav-item {% if active_page == 'consultar_ar' %}active{% endif %}">
+            <i class="fas fa-search"></i> Consultar ARs
+          </a>
+          <a href="/relatorios" class="nav-item {% if active_page == 'relatorios' %}active{% endif %}">
+            <i class="fas fa-chart-bar"></i> Relatórios
+          </a>
+          <a href="/historico" class="nav-item {% if active_page == 'historico' %}active{% endif %}">
+            <i class="fas fa-history"></i> Histórico
+          </a>
+          <a href="/configuracoes" class="nav-item {% if active_page == 'configuracoes' %}active{% endif %}">
+            <i class="fas fa-cog"></i> Configurações
+          </a>
+        </nav>
+        
+        <div class="sidebar-info">
+          <div class="info-item">
+            <i class="fas fa-calendar-day"></i>
+            <span>{{ today_date }}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-building"></i>
+            <span>{{ session.get('unidade', 'Unidade não selecionada') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="content-wrapper">
+        <div class="breadcrumb">
+          <a href="/dashboard"><i class="fas fa-home"></i></a>
+          {% for item in breadcrumb %}
+            <span class="breadcrumb-separator">/</span>
+            {% if loop.last %}
+              <span class="breadcrumb-current">{{ item.label }}</span>
+            {% else %}
+              <a href="{{ item.url }}">{{ item.label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        
+        <div class="content">
+          {% block content %}{% endblock %}
+        </div>
+        
+        <div class="footer">
+          <div>Sistema de Gestão de PTs - Petrobras &copy; {{ current_year }}</div>
+          <div>Desenvolvido por João Paulo Cavalcante</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Título do Modal</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                Conteúdo do modal
+            </div>
+                <div class="modal-footer">
+                <button class="button button-outline" id="modal-cancel">Cancelar</button>
+                <button class="button" id="modal-confirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loader -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <div class="loader-text">Processando...</div>
+            <div id="loader-progress-text" class="loader-progress-text">0%</div>
+            <div class="loader-progress-bar">
+                <div id="loader-progress" class="loader-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notifications -->
+    <div id="notification-container" class="notification-container"></div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+  </html>
+  

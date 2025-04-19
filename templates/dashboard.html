@@ -1,0 +1,95 @@
+<!-- Crie um arquivo dashboard.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Dashboard de Permissões de Trabalho</h2>
+        <div class="dashboard-actions">
+            <button class="button" onclick="elaborarPTs()">Nova PT</button>
+            <button class="button button-blue" onclick="consultarAR()">Consultar AR</button>
+        </div>
+    </div>
+  
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-number">{{ stats.pts_total }}</div>
+            <div class="stat-label">Total de PTs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number">{{ stats.pts_emitidas }}</div>
+            <div class="stat-label">PTs Emitidas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-number">{{ stats.pts_pendentes }}</div>
+            <div class="stat-label">PTs Pendentes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-number">{{ stats.ars_total }}</div>
+            <div class="stat-label">ARs Registradas</div>
+        </div>
+    </div>
+  
+    <div class="dashboard-content">
+        <div class="recent-activities">
+            <h3>Atividades Recentes</h3>
+            <div class="activity-list">
+                {% for activity in activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">{{ activity.icon }}</div>
+                        <div class="activity-details">
+                            <div class="activity-title">{{ activity.title }}</div>
+                            <div class="activity-desc">{{ activity.description }}</div>
+                            <div class="activity-time">{{ activity.time }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    
+        <div class="upcoming-tasks">
+            <h3>Próximas PTs</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ordem</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pt in upcoming_pts %}
+                        <tr>
+                            <td>{{ pt.ordem }}</td>
+                            <td>{{ pt.descricao }}</td>
+                            <td>{{ pt.data }}</td>
+                            <td>
+                                <span class="status-badge status-{{ pt.status|lower }}">
+                                    {{ pt.status }}
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <button class="action-button" title="Visualizar" onclick="viewPT('{{ pt.ordem }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-button" title="Editar" onclick="editPT('{{ pt.ordem }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-button" title="Imprimir" onclick="printPT('{{ pt.ordem }}')">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}  
