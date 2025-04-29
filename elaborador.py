@@ -578,8 +578,14 @@ def preencher_campos_pt(driver, dados_planilha, index, data):
             )
             try:
                 #//*[@id="form_pt:tabelaParticipantesAr:0:j_id1047"] <- para tentar clicar no requisitante
+                #/html/body/center/div/div[2]/div[2]/form/fieldset/table[8]/tbody/tr[3]/td/div/div/div/div[2]/table/tbody/tr/td/div/table/tbody/tr
+                """problem_req = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//div[@id='modalMensagemDiv']/center/input[@value='Fechar']"))
+                )
+                problem_req.click()
+                print(f"Problema com o requisitante {valor}")"""
                 find_req = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, f"//*[@id='form_pt:tabelaParticipantesAr:0:j_id1047']"))
+                    EC.presence_of_element_located((By.XPATH, f"//*[contains(@id, 'form_pt:tabelaParticipantesAr:0:j_id')]"))
                 )
                 find_req.click()
                 print(f"Requisidante {valor} adicionado")
@@ -588,7 +594,7 @@ def preencher_campos_pt(driver, dados_planilha, index, data):
                     EC.element_to_be_clickable((By.XPATH, "//div[@id='modalMensagemDiv']/center/input[@value='Fechar']"))
                 )
                 problem_req.click()
-                print(f"Problema com o requisitante {valor}")
+                print(f"Requisidante {valor} não encontrado")
 
         campo_data = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//input[@id='form_pt:dtIniProgformInputDate']"))
@@ -1322,5 +1328,4 @@ def salvar_dados_planilha(dados_planilha, caminho_arquivo):
             planilha[f"V{index}"] = dados_planilha["Número\nA.R."][index-2]
         workbook.save(caminho_arquivo)
     except Exception as e:
-
         print(f"Erro ao salvar informações na planilha: {e}")

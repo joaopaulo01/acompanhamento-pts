@@ -67,6 +67,7 @@ if not os.path.exists('static'):
 
 # Criar arquivo CSS básico
 css_content = """
+
 :root {
   --petrobras-green: #009846;
   --petrobras-green-dark: #006633;
@@ -185,7 +186,7 @@ body {
 }
 
 .header img {
-    height: 90px;
+    height: 100px;
 }
 .text-button {
     background: none;
@@ -385,6 +386,11 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   color: #333;
 }
 
+.status-salva {
+  background-color: var(--petrobras-yellow);
+  color: #333;
+}
+
 .status-erro {
   background-color: #e74c3c;
   color: white;
@@ -410,13 +416,20 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   padding: 10px 15px;
 }
 
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+    width: 400px; /* Define a largura desejada para a coluna de descrição */
+    max-width: 400px;
+    word-wrap: break-word; /* Permite quebra de linha se o texto ultrapassar o limite */
+}
+
 .data-table tr:hover {
   background-color: rgba(0, 152, 70, 0.05);
 }
 
 .data-table .actions {
   display: flex;
-  gap: 8px;
+  
 }
 
 .data-table .action-button {
@@ -492,9 +505,17 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   flex-wrap: wrap;
 }
 
-.recent-activities, .upcoming-tasks {
-  flex: 1;
+.recent-activities {
+  flex: 0.5;
   min-width: 300px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.upcoming-tasks {
+  flex: 1;
+  min-width: 500px;
   background-color: white;
   border-radius: 8px;
   padding: 20px;
@@ -927,7 +948,9 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
 }
 
 .sidebar {
-  width: 250px;
+  width: 15%;
+  min-width: 80px; /* Garante uma largura mínima */
+  max-width: 200px; /* Limita a largura máxima */
   background-color: white;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   display: flex;
@@ -1436,6 +1459,232 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   border: 1px solid #eee;
 }
 
+/* Estilos para a página de consultar AR */
+
+/* Formulário de filtros em grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Estilização da tabela de resultados */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-expired {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Botões de ação na tabela */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.action-buttons button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-view-details {
+    color: #0d6efd;
+}
+
+.btn-print {
+    color: #198754;
+}
+
+.btn-edit {
+    color: #fd7e14;
+}
+
+/* Estado vazio para a tabela */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #adb5bd;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.empty-state small {
+    font-size: 0.9rem;
+}
+
+/* Modal de detalhes da AR */
+.modal-lg {
+    max-width: 800px;
+}
+
+.detail-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #0d6efd;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    color: #721c24;
+}
+
+.error-message i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #dc3545;
+}
+
+/* Estilos para os detalhes da AR */
+.ar-details {
+    padding: 10px;
+}
+
+.detail-section {
+    margin-bottom: 25px;
+}
+
+.detail-section h3 {
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #343a40;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.detail-item {
+    margin-bottom: 10px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    color: #212529;
+}
+
+.detail-text {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    white-space: pre-line;
+    color: #212529;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
 
 .hidden {
     display: none;
@@ -2478,98 +2727,6 @@ html_content = """
 with open('templates/index.html', 'w', encoding='utf-8') as f:
     f.write(html_content)
 
-# Rotas da aplicação Flask
-"""@app.route('/')
-def index():
-    return render_template('index.html')"""
-
-"""@app.route('/processar_form', methods=['POST'])
-def processar_form():
-    global usuario, senha, data, caminho_arquivo
-    
-    if 'planilha' in request.files:
-        arquivo = request.files['planilha']
-        if arquivo.filename != '':
-            # Salvar o arquivo temporariamente
-            caminho_arquivo = os.path.join('uploads', arquivo.filename)
-            os.makedirs('uploads', exist_ok=True)
-            arquivo.save(caminho_arquivo)
-    
-    usuario = request.form.get('usuario', '')
-    senha = request.form.get('senha', '')
-    data = request.form.get('data', '')
-    
-    action = request.form.get('action', '')
-    
-    try:
-        if action == 'elaborar_pts':
-            empresa_selecionada = request.form.get('empresa', '')
-            area_selecionada = request.form.get('area', '')
-            
-            if area_selecionada == "GAS NATURAL&ENERGIA":
-                unidade_selecionada = request.form.get('unidadeGas', '')
-            else:
-                unidade_selecionada = request.form.get('unidadeRef', '')
-            
-            if not usuario or not senha or not data or not caminho_arquivo:
-                return jsonify({
-                    'success': False,
-                    'message': 'Por favor, preencha todos os campos e selecione um arquivo.'
-                })
-            
-            # Chama a função do módulo elaborador
-            elaborar_pts(usuario, senha, data, caminho_arquivo, empresa_selecionada, area_selecionada, unidade_selecionada)
-            return jsonify({
-                'success': True,
-                'message': f'PTs elaboradas com sucesso para {os.path.basename(caminho_arquivo)}!'
-            })
-            
-        elif action == 'consultar_ar':
-            empresa_selecionada = request.form.get('empresa', '')
-            area_selecionada = request.form.get('area', '')
-            
-            if area_selecionada == "GAS NATURAL&ENERGIA":
-                unidade_selecionada = request.form.get('unidadeGas', '')
-            else:
-                unidade_selecionada = request.form.get('unidadeRef', '')
-            
-            if not usuario or not senha or not caminho_arquivo:
-                return jsonify({
-                    'success': False,
-                    'message': 'Por favor, preencha todos os campos e selecione um arquivo.'
-                })
-            
-            # Chama a função do módulo elaborador
-            consultar_ar(usuario, senha, caminho_arquivo, empresa_selecionada, area_selecionada, unidade_selecionada)
-            return jsonify({
-                'success': True,
-                'message': f'Consultando ARs para {usuario}...'
-            })
-            
-        elif action == 'elaborar_ar':
-            if not usuario or not senha or not caminho_arquivo:
-                return jsonify({
-                    'success': False,
-                    'message': 'Por favor, preencha todos os campos e selecione um arquivo.'
-                })
-            
-            # Chama a função do módulo elaborador
-            elaborar_ar(usuario, senha, caminho_arquivo)
-            return jsonify({
-                'success': True,
-                'message': f'Elaborando ARs para {usuario}...'
-            })
-    
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': f'Erro: {str(e)}'
-        })
-    
-    return jsonify({
-        'success': True,
-        'message': 'Formulário processado com sucesso!'
-    })"""
 @app.route('/css')
 def css():
     return app.send_static_file('style.css')
@@ -2822,9 +2979,16 @@ def logout():
 def dashboard():
     if not session.get('username'):
         return redirect(url_for('login'))
+    # Obter estatísticas reais da planilha
+    stats = get_dashboard_stats()
     
+    # Obter atividades recentes da planilha
+    activities = get_recent_activities()
+    
+    # Obter próximas PTs da planilha
+    upcoming_pts = get_upcoming_pts()
     # Dados de exemplo para o dashboard
-    stats = {
+    """stats = {
         'pts_total': 120,
         'pts_emitidas': 85,
         'pts_pendentes': 30,
@@ -2861,7 +3025,7 @@ def dashboard():
             'status': 'Pendente'
         },
         # Adicione mais PTs conforme necessário
-    ]
+    ]"""
     
     return render_template(
         'dashboard.html', 
@@ -2873,6 +3037,304 @@ def dashboard():
         current_year=datetime.datetime.now().year,
         breadcrumb=[]  # Dashboard não precisa de breadcrumb
     )
+    
+@app.route('/programacao')
+def programacao_page():
+    if not session.get('username'):
+        return redirect(url_for('login'))
+    upcoming_pts1 = get_upcoming_pts2()
+    return render_template(
+        'programacao.html', 
+        active_page='dashboard',
+        upcoming_pts=upcoming_pts1,
+        today_date=datetime.datetime.now().strftime('%d/%m/%Y'),
+        current_year=datetime.datetime.now().year,
+        breadcrumb=[]  # Dashboard não precisa de breadcrumb
+    )
+    
+def get_dashboard_stats():
+    """
+    Obtém estatísticas da planilha mais recente na pasta uploads
+    ou da planilha selecionada pelo usuário
+    """
+    # Valores padrão caso não seja possível ler a planilha
+    default_stats = {
+        'pts_total': 0,
+        'pts_emitidas': 0,
+        'pts_pendentes': 0,
+        'ars_total': 0
+    }
+    
+    try:
+        # Obter o caminho da planilha
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return default_stats
+        
+        # Ler a planilha com pandas
+        df = pd.read_excel(planilha_path)
+        
+        # Calcular estatísticas
+        stats = {
+            'pts_total': len(df) if 'Ordem' in df.columns else 0,
+            'pts_emitidas': len(df[df['PT Emitida'].notna()]) if 'PT Emitida' in df.columns else 0,
+            #'PT Salva' if "salva" in row['PT Emitida'].lower() else ('PT emitida' if "sim" in row['PT Emitida'].lower() else 'PT não emitida')
+            'pts_salvas': len(df[df['PT Emitida'].str.lower().str.contains('salva')]) if 'PT Emitida' in df.columns else 0,
+            'pts_pendentes': len(df[df['PT Emitida'].isna()]) if 'PT Emitida' in df.columns else 0,
+            'ars_total': len(df[df['Número\nA.R.'].notna()]) if f'Número\nA.R.' in df.columns else 0
+        }
+        
+        return stats
+    
+    except Exception as e:
+        print(f"Erro ao obter estatísticas da planilha: {e}")
+        return default_stats
+
+def get_latest_excel_file():
+    """
+    Retorna o caminho para o arquivo Excel mais recente na pasta uploads
+    ou o arquivo selecionado pelo usuário na sessão atual
+    """
+    global caminho_arquivo
+    
+    # Se há um arquivo específico selecionado na sessão atual, use-o
+    if caminho_arquivo and os.path.exists(caminho_arquivo):
+        return caminho_arquivo
+    
+    # Caso contrário, busque o arquivo mais recente na pasta uploads
+    upload_dir = 'uploads'
+    if not os.path.exists(upload_dir):
+        return None
+    
+    excel_files = [
+        os.path.join(upload_dir, f) for f in os.listdir(upload_dir) 
+        if f.endswith(('.xlsx', '.xls')) and os.path.isfile(os.path.join(upload_dir, f))
+    ]
+    
+    if not excel_files:
+        return None
+    
+    # Retorna o arquivo mais recente com base na data de modificação
+    return max(excel_files, key=os.path.getmtime)
+
+def get_recent_activities():
+    """
+    Obtém atividades recentes com base nos dados da planilha
+    """
+    try:
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return []
+        
+        df = pd.read_excel(planilha_path)
+        activities = []
+        
+        # Verifica PTs emitidas recentemente
+        if 'PT Emitida' in df.columns and 'Ordem' in df.columns:
+            pts_emitidas = df[df['PT Emitida'].notna()].tail(5)  # Últimas 5 PTs emitidas
+            
+            for _, row in pts_emitidas.iterrows():
+                ordem = str(row['Ordem']) if pd.notna(row['Ordem']) else "N/A"
+                pt = str(row['PT Emitida']) if pd.notna(row['PT Emitida']) else "N/A"
+                activities.append({
+                    'icon': '📄',
+                    'title': 'PT Salva' if "salva" in row['PT Emitida'].lower() else ('PT emitida' if "sim" in row['PT Emitida'].lower() else 'PT não emitida'),
+                    'description': f'PT {pt} foi emitida para ordem {ordem}',
+                    'time': 'Recentemente'
+                })
+        
+        # Verifica ARs pendentes
+        if 'Número\nA.R.' in df.columns and 'Ordem' in df.columns:
+            ars_pendentes = df[df['Número\nA.R.'] == "ELABORAR AR"].head(5)  # 5 primeiras ARs pendentes
+            
+            for _, row in ars_pendentes.iterrows():
+                ordem = str(row['Ordem']) if pd.notna(row['Ordem']) else "N/A"
+                
+                activities.append({
+                    'icon': '⚠️',
+                    'title': 'AR Pendente',
+                    'description': f'AR para ordem {ordem} precisa ser elaborada',
+                    'time': 'Pendente'
+                })
+        
+        return activities[:10]  # Retorna no máximo 10 atividades
+    
+    except Exception as e:
+        print(f"Erro ao obter atividades recentes: {e}")
+        return []
+    
+def get_upcoming_pts():
+    """
+    Obtém lista de próximas PTs com base nos dados da planilha
+    """
+    try:
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return []
+        
+        df = pd.read_excel(planilha_path)
+        upcoming_pts = []
+        
+        # Verifica ordens pendentes (sem PT emitida)
+        if 'Ordem' in df.columns and 'Descrição da PT' in df.columns:
+            # Filtra as ordens que não têm PT emitida
+            if 'PT Emitida' in df.columns:
+                ordens_pendentes = df[df['Ação'] == 'Elaborar'].head(10)  # 10 primeiras ordens pendentes
+            else:
+                ordens_pendentes = df.head(10)
+            
+            for _, row in ordens_pendentes.iterrows():
+                ordem = str(row['Ordem']) if pd.notna(row['Ordem']) else "N/A"
+                descricao = str(row['Descrição da PT']).split('\n')[0] if pd.notna(row['Descrição da PT']) else "Sem descrição"
+                ar = str(row['Número\nA.R.']) if pd.notna(row['Número\nA.R.']) else "ELABORAR"
+                libra = str(row['LIBRA']) if pd.notna(row['LIBRA']) else "definir com operação"
+                aro = str(row['ARO']) if pd.notna(row['ARO']) else "definir com operação"
+                especialidade = str(row['ESPECIALIDADES']) if pd.notna(row['ESPECIALIDADES']) else "N/A"
+                espaco_confinado = str(row[f'Espaço\nConfinado']) if pd.notna(row[f'Espaço\nConfinado']) else "Não"
+                obs = str(row['Observações']) if pd.notna(row['Observações']) else " "
+                
+                # Verifica se há data planejada
+                data = None
+
+                if 'SEG' in df.columns and pd.notna(row['SEG']) and str(row['SEG']).lower() == 'x':
+                    data = 'Segunda'
+                elif 'TER' in df.columns and pd.notna(row['TER']) and str(row['TER']).lower() == 'x':
+                    data = 'Terça'
+                elif 'QUA' in df.columns and pd.notna(row['QUA']) and str(row['QUA']).lower() == 'x':
+                    data = 'Quarta'
+                elif 'QUI' in df.columns and pd.notna(row['QUI']) and str(row['QUI']).lower() == 'x':
+                    data = 'Quinta'
+                elif 'SEX' in df.columns and pd.notna(row['SEX']) and str(row['SEX']).lower() == 'x':
+                    data = 'Sexta'
+                else:
+                    data = 'Sem dia definido'
+                
+                # Determina o status
+                status = "Pendente"
+                if 'PT Emitida' in df.columns and pd.notna(row['PT Emitida']):
+                    status = "Emitida"
+                if 'PT Emitida' in df.columns and pd.notna(row['PT Emitida']) and 'salva' in str(row['PT Emitida']).lower():
+                    status = "Salva"
+                
+                upcoming_pts.append({
+                    'ordem': ordem,
+                    'descricao': descricao[:50] + ('...' if len(descricao) > 50 else ''),  # Limita o tamanho
+                    'data': data,
+                    'status': status,
+                    'ar': ar,
+                    'libra': libra,
+                    'aro': aro,
+                    'especialidade': especialidade,
+                    'espaco_confinado': espaco_confinado,
+                    'obs': obs
+                })
+        
+        return upcoming_pts
+    
+    except Exception as e:
+        print(f"Erro ao obter próximas PTs: {e}")
+        return []
+    
+def get_upcoming_pts2():
+    """
+    Obtém lista de próximas PTs com base nos dados da planilha
+    """
+    try:
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return []
+        
+        df = pd.read_excel(planilha_path)
+        upcoming_pts = []
+        
+        # Verifica ordens pendentes (sem PT emitida)
+        if 'Ordem' in df.columns and 'Descrição da PT' in df.columns:
+            # Filtra as ordens que não têm PT emitida
+            if 'Ordem' in df.columns:
+                ordens = df[df['Ação'].notna()].head(40)  # 10 primeiras ordens
+            else:
+                ordens = df.head(10)
+            
+            for _, row in ordens.iterrows():
+                ordem = str(row['Ordem']) if pd.notna(row['Ordem']) else "N/A"
+                descricao = str(row['Descrição da PT']) if pd.notna(row['Descrição da PT']) else "Sem descrição"
+                ar = str(row['Número\nA.R.']) if pd.notna(row['Número\nA.R.']) else "ELABORAR"
+                libra = str(row['LIBRA']) if pd.notna(row['LIBRA']) else "definir com operação"
+                aro = str(row['ARO']) if pd.notna(row['ARO']) else "definir com operação"
+                especialidade = str(row['ESPECIALIDADES']) if pd.notna(row['ESPECIALIDADES']) else "N/A"
+                espaco_confinado = str(row[f'Espaço\nConfinado']) if pd.notna(row[f'Espaço\nConfinado']) else "Não"
+                obs = str(row['Observações']) if pd.notna(row['Observações']) else " "
+                
+                # Verifica se há data planejada
+                data = None
+
+                if 'SEG' in df.columns and pd.notna(row['SEG']) and str(row['SEG']).lower() == 'x':
+                    data = 'Segunda'
+                elif 'TER' in df.columns and pd.notna(row['TER']) and str(row['TER']).lower() == 'x':
+                    data = 'Terça'
+                elif 'QUA' in df.columns and pd.notna(row['QUA']) and str(row['QUA']).lower() == 'x':
+                    data = 'Quarta'
+                elif 'QUI' in df.columns and pd.notna(row['QUI']) and str(row['QUI']).lower() == 'x':
+                    data = 'Quinta'
+                elif 'SEX' in df.columns and pd.notna(row['SEX']) and str(row['SEX']).lower() == 'x':
+                    data = 'Sexta'
+                else:
+                    data = 'Sem dia definido'
+                
+                # Determina o status
+                status = "Pendente"
+                if 'PT Emitida' in df.columns and pd.notna(row['PT Emitida']):
+                    status = "Emitida"
+                if 'PT Emitida' in df.columns and pd.notna(row['PT Emitida']) and 'salva' in str(row['PT Emitida']).lower():
+                    status = "Salva"
+                
+                upcoming_pts.append({
+                    'ordem': ordem,
+                    'descricao': descricao, #[:50] + ('...' if len(descricao) > 50 else ''),  # Limita o tamanho
+                    'data': data,
+                    'status': status,
+                    'ar': ar,
+                    'libra': libra,
+                    'aro': aro,
+                    'especialidade': especialidade,
+                    'espaco_confinado': espaco_confinado,
+                    'obs': obs
+                })
+        
+        return upcoming_pts
+    
+    except Exception as e:
+        print(f"Erro ao obter próximas PTs: {e}")
+        return []
+    
+@app.route('/selecionar_planilha', methods=['POST'])
+def selecionar_planilha():
+    global caminho_arquivo
+    
+    if 'planilha' in request.files:
+        arquivo = request.files['planilha']
+        if arquivo.filename != '':
+            # Salvar o arquivo temporariamente
+            caminho_arquivo = os.path.join('uploads', arquivo.filename)
+            os.makedirs('uploads', exist_ok=True)
+            arquivo.save(caminho_arquivo)
+            
+            # Armazenar o caminho na sessão
+            session['planilha_selecionada'] = caminho_arquivo
+            
+            return jsonify({
+                'success': True,
+                'message': 'Planilha selecionada com sucesso!'
+            })
+    
+    return jsonify({
+        'success': False,
+        'message': 'Erro ao selecionar planilha.'
+    })
 
 @app.route('/elaborar_pts')
 def elaborar_pts_page():
@@ -2894,15 +3356,337 @@ def consultar_ar_page():
     if not session.get('username'):
         return redirect(url_for('login'))
     
+    # Obter estatísticas das ARs
+    ar_stats = get_ar_stats()
+    
     return render_template(
         'consultar_ar.html', 
         active_page='consultar_ar',
         today_date=datetime.datetime.now().strftime('%d/%m/%Y'),
         current_year=datetime.datetime.now().year,
+        ar_stats=ar_stats,
         breadcrumb=[
             {'label': 'Consultar ARs', 'url': '#'}
         ]
     )
+def get_ar_stats():
+    """
+    Obtém estatísticas gerais sobre as ARs na planilha atual
+    """
+    default_stats = {
+        'total': 0,
+        'emitidas': 0,
+        'pendentes': 0,
+        'expiradas': 0,
+        'hoje': 0
+    }
+    
+    try:
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return default_stats
+        
+        df = pd.read_excel(planilha_path)
+        columns = detect_columns(df)
+        
+        if 'ar' not in columns:
+            return default_stats
+        
+        ar_col = columns['ar']
+        
+        # Total de ARs (que não estão como "ELABORAR AR")
+        total_ars = df[df[ar_col].notna() & (df[ar_col] != "ELABORAR AR")]
+        stats = {
+            'total': len(total_ars),
+            'emitidas': len(total_ars),  # Todas as ARs não pendentes são consideradas emitidas
+            'pendentes': len(df[df[ar_col] == "ELABORAR AR"]),
+            'expiradas': 0,  # Precisaria de uma coluna de data de validade para calcular
+            'hoje': 0  # Precisaria de uma coluna de data de emissão para calcular
+        }
+        
+        # Se tiver coluna de data, calcula ARs expiradas e emitidas hoje
+        if 'data' in columns:
+            data_col = columns['data']
+            hoje = datetime.datetime.now().date()
+            
+            # ARs expiradas (data menor que hoje)
+            if len(total_ars) > 0 and data_col in total_ars.columns:
+                expiradas = total_ars[pd.to_datetime(total_ars[data_col], errors='coerce').dt.date < hoje]
+                stats['expiradas'] = len(expiradas)
+            
+                # ARs emitidas hoje
+                emitidas_hoje = total_ars[pd.to_datetime(total_ars[data_col], errors='coerce').dt.date == hoje]
+                stats['hoje'] = len(emitidas_hoje)
+        
+        return stats
+    
+    except Exception as e:
+        print(f"Erro ao obter estatísticas de ARs: {e}")
+        return default_stats
+
+@app.route('/buscar_ars', methods=['POST'])
+def buscar_ars():
+    """
+    API para buscar ARs com base em critérios de filtro
+    """
+    if not session.get('username'):
+        return jsonify({'error': 'Não autenticado'}), 401
+    
+    try:
+        # Obter parâmetros de busca
+        filtros = request.json
+        numero_ar = filtros.get('numero_ar', '')
+        numero_ordem = filtros.get('numero_ordem', '')
+        descricao = filtros.get('descricao', '')
+        data_inicio = filtros.get('data_inicio', '')
+        data_fim = filtros.get('data_fim', '')
+        especialidade = filtros.get('especialidade', '')
+        status = filtros.get('status', 'todos')
+        
+        # Obter a planilha
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhuma planilha disponível para consulta'
+            })
+        
+        df = pd.read_excel(planilha_path)
+        columns = detect_columns(df)
+        
+        # Verificar se temos as colunas necessárias
+        if 'ar' not in columns or 'ordem' not in columns:
+            return jsonify({
+                'success': False,
+                'message': 'A planilha não contém as colunas necessárias para consulta de ARs'
+            })
+        
+        # Aplicar filtros
+        filtered_df = df.copy()
+        
+        # Filtro por número de AR
+        if numero_ar:
+            ar_col = columns['ar']
+            filtered_df = filtered_df[filtered_df[ar_col].astype(str).str.contains(numero_ar, case=False, na=False)]
+        
+        # Filtro por número de ordem
+        if numero_ordem:
+            ordem_col = columns['ordem']
+            filtered_df = filtered_df[filtered_df[ordem_col].astype(str).str.contains(numero_ordem, case=False, na=False)]
+        
+        # Filtro por descrição
+        if descricao and 'descricao' in columns:
+            desc_col = columns['descricao']
+            filtered_df = filtered_df[filtered_df[desc_col].astype(str).str.contains(descricao, case=False, na=False)]
+        
+        # Filtro por data (se houver coluna de data)
+        if 'data' in columns and (data_inicio or data_fim):
+            data_col = columns['data']
+            
+            if data_inicio:
+                try:
+                    data_inicio = datetime.datetime.strptime(data_inicio, '%Y-%m-%d').date()
+                    filtered_df = filtered_df[pd.to_datetime(filtered_df[data_col], errors='coerce').dt.date >= data_inicio]
+                except:
+                    pass
+            
+            if data_fim:
+                try:
+                    data_fim = datetime.datetime.strptime(data_fim, '%Y-%m-%d').date()
+                    filtered_df = filtered_df[pd.to_datetime(filtered_df[data_col], errors='coerce').dt.date <= data_fim]
+                except:
+                    pass
+        
+        # Filtro por especialidade (se houver coluna de especialidade)
+        if especialidade and 'ESPECIALIDADES' in df.columns:
+            filtered_df = filtered_df[filtered_df['ESPECIALIDADES'].astype(str).str.contains(especialidade, case=False, na=False)]
+        
+        # Filtro por status
+        if status != 'todos':
+            ar_col = columns['ar']
+            if status == 'emitidas':
+                filtered_df = filtered_df[filtered_df[ar_col].notna() & (filtered_df[ar_col] != "ELABORAR AR")]
+            elif status == 'pendentes':
+                filtered_df = filtered_df[filtered_df[ar_col] == "ELABORAR AR"]
+        
+        # Preparar resultados
+        resultados = []
+        for _, row in filtered_df.iterrows():
+            ar_col = columns['ar']
+            ordem_col = columns['ordem']
+            
+            # Obter número da AR
+            numero_ar = str(row[ar_col]) if pd.notna(row[ar_col]) else "Pendente"
+            
+            # Obter número da ordem
+            if pd.notna(row[ordem_col]):
+                if isinstance(row[ordem_col], (int, float)):
+                    ordem = str(int(row[ordem_col]))
+                else:
+                    ordem = str(row[ordem_col])
+            else:
+                ordem = "N/A"
+            
+            # Obter descrição
+            descricao = "Sem descrição"
+            if 'descricao' in columns and pd.notna(row[columns['descricao']]):
+                descricao = str(row[columns['descricao']])
+                if len(descricao) > 100:
+                    descricao = descricao[:100] + '...'
+            
+            # Obter data
+            data = "N/A"
+            if 'data' in columns and pd.notna(row[columns['data']]):
+                data_val = row[columns['data']]
+                if isinstance(data_val, (datetime.datetime, datetime.date)):
+                    data = data_val.strftime('%d/%m/%Y')
+                else:
+                    data = str(data_val)
+            
+            # Obter especialidade
+            especialidade = "N/A"
+            if 'ESPECIALIDADES' in df.columns and pd.notna(row['ESPECIALIDADES']):
+                especialidade = str(row['ESPECIALIDADES'])
+            
+            # Determinar status
+            status = "Emitida"
+            if numero_ar == "ELABORAR AR" or numero_ar == "Pendente":
+                status = "Pendente"
+            
+            resultados.append({
+                'numero_ar': numero_ar,
+                'ordem': ordem,
+                'descricao': descricao,
+                'data': data,
+                'especialidade': especialidade,
+                'status': status
+            })
+        
+        return jsonify({
+            'success': True,
+            'resultados': resultados,
+            'total': len(resultados)
+        })
+    
+    except Exception as e:
+        print(f"Erro ao buscar ARs: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao processar a consulta: {str(e)}'
+        })
+
+def detect_columns(df):
+    """
+    Detecta as colunas disponíveis na planilha e mapeia para os nomes esperados
+    """
+    column_mapping = {}
+    
+    # Lista de possíveis nomes para cada tipo de coluna
+    column_variants = {
+        'ordem': ['Ordem', 'ordem', 'ORDEM', 'Ordem de Serviço', 'OS'],
+        'descricao': ['Descrição da PT', 'Descrição', 'descricao', 'DESCRIÇÃO', 'Descricao'],
+        'pt_emitida': ['PT Emitida', 'PT', 'pt', 'Permissão de Trabalho', 'Permissao'],
+        'ar': ['NúmeronA.R.', 'Número A.R.', 'AR', 'Análise de Risco', 'Analise de Risco'],
+        'data': ['Data Planejada', 'Data', 'DATA', 'data', 'Data Início', 'Data Inicio'],
+        'status': ['Status', 'STATUS', 'status', 'Situação', 'Situacao']
+    }
+    
+    # Para cada tipo de coluna, procura por variantes no DataFrame
+    for col_type, variants in column_variants.items():
+        for variant in variants:
+            if variant in df.columns:
+                column_mapping[col_type] = variant
+                break
+    
+    return column_mapping
+
+
+@app.route('/detalhes_ar/<numero_ar>', methods=['GET'])
+def detalhes_ar(numero_ar):
+    """
+    API para obter detalhes de uma AR específica
+    """
+    if not session.get('username'):
+        return jsonify({'error': 'Não autenticado'}), 401
+    
+    try:
+        # Obter a planilha
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhuma planilha disponível para consulta'
+            })
+        
+        df = pd.read_excel(planilha_path)
+        columns = detect_columns(df)
+        
+        # Verificar se temos a coluna de AR
+        if 'ar' not in columns:
+            return jsonify({
+                'success': False,
+                'message': 'A planilha não contém a coluna de AR necessária'
+            })
+        
+        ar_col = columns['ar']
+        
+        # Filtrar a linha com o número de AR específico
+        filtered_df = df[df[ar_col].astype(str) == numero_ar]
+        
+        if len(filtered_df) == 0:
+            return jsonify({
+                'success': False,
+                'message': f'AR número {numero_ar} não encontrada'
+            })
+        
+                # Obter a primeira linha (caso haja múltiplas com o mesmo número de AR)
+        row = filtered_df.iloc[0]
+        
+        # Construir o objeto de detalhes da AR com todas as informações disponíveis
+        detalhes = {
+            'numero_ar': numero_ar,
+            'status': "Emitida" if numero_ar != "ELABORAR AR" else "Pendente"
+        }
+        
+        # Adicionar todas as colunas disponíveis
+        for col_type, col_name in columns.items():
+            if col_name in row and pd.notna(row[col_name]):
+                # Formatar valores especiais
+                if col_type == 'data' and isinstance(row[col_name], (datetime.datetime, datetime.date)):
+                    detalhes[col_type] = row[col_name].strftime('%d/%m/%Y')
+                elif isinstance(row[col_name], (int, float)) and col_type != 'ar':
+                    # Converter números para inteiros quando apropriado
+                    detalhes[col_type] = int(row[col_name])
+                else:
+                    detalhes[col_type] = row[col_name]
+        
+        # Adicionar outras colunas úteis que podem existir na planilha
+        for col in filtered_df.columns:
+            if pd.notna(row[col]) and col not in columns.values():
+                # Ignorar colunas com valores NaN ou já incluídas
+                value = row[col]
+                
+                # Formatar datas
+                if isinstance(value, (datetime.datetime, datetime.date)):
+                    value = value.strftime('%d/%m/%Y')
+                
+                # Usar o nome original da coluna como chave
+                detalhes[col] = value
+        
+        return jsonify({
+            'success': True,
+            'detalhes': detalhes
+        })
+    
+    except Exception as e:
+        print(f"Erro ao obter detalhes da AR: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao processar a consulta: {str(e)}'
+        })
     
 @app.route('/resultado')
 def resultado_page():
@@ -3037,15 +3821,15 @@ def processar_form():
             area_selecionada = request.form.get('area', '')
             
             if area_selecionada == "GAS NATURAL&ENERGIA":
-                unidade_selecionada = request.form.get('unidade', '')
+                unidade_selecionada = request.form.get('unidadeGas', '')
             else:
-                unidade_selecionada = request.form.get('unidade', '')
+                unidade_selecionada = request.form.get('unidadeRef', '')
             
             if not usuario or not senha or not data or not caminho_arquivo:
                 return jsonify({
                     'success': False,
                     'message': 'Por favor, preencha todos os campos e selecione um arquivo.'
-                })
+                }), 400
             
             # IMPORTANTE: Aqui chamamos a função elaborar_pts diretamente
             # Isso garante que ela seja chamada independentemente do tipo de resposta
@@ -3070,14 +3854,14 @@ def processar_form():
                 return jsonify({
                     'success': True,
                     'message': f'Elaborando PTs para {os.path.basename(caminho_arquivo)}...',
-                    'redirect': '/resultado'
+                    #'redirect': '/resultado'
                 })
                 
             except Exception as e:
                 return jsonify({
                     'success': False,
                     'message': f'Erro ao iniciar elaboração: {str(e)}'
-                })
+                }), 400
         
         elif action == 'consultar_ar':
             empresa_selecionada = request.form.get('empresa', '')
@@ -3092,7 +3876,7 @@ def processar_form():
                 return jsonify({
                     'success': False,
                     'message': 'Por favor, preencha todos os campos e selecione um arquivo.'
-                })
+                }), 400
             
             # Chama a função do módulo elaborador
             try:
@@ -3150,7 +3934,7 @@ def detalhes_pt(ordem):
         'ordem': ordem,
         'numero_pt': f'PT-2023-{ordem}',
         'numero_ar': f'AR-2023-{int(ordem) % 10000}',
-        'data': '12/11/2023',
+        'data': '22/04/2025',
         'status': 'Emitida',
         'descricao': 'Manutenção preventiva nos equipamentos da unidade geradora.',
         'recomendacoes': 'Utilizar EPI adequado. Verificar isolamento da área. Comunicar operação antes do início das atividades.'
@@ -3215,6 +3999,192 @@ def exportar_excel():
     response.headers["Content-Disposition"] = "attachment; filename=resultados_pts.xlsx"
     return response
 
+@app.route('/exportar_ars', methods=['POST'])
+def exportar_ars():
+    """
+    Exporta os resultados da consulta de ARs para um arquivo Excel
+    """
+    if not session.get('username'):
+        return jsonify({'error': 'Não autenticado'}), 401
+    
+    try:
+        # Obter os filtros da requisição
+        filtros = request.json
+        numero_ar = filtros.get('numero_ar', '')
+        numero_ordem = filtros.get('numero_ordem', '')
+        descricao = filtros.get('descricao', '')
+        data_inicio = filtros.get('data_inicio', '')
+        data_fim = filtros.get('data_fim', '')
+        especialidade = filtros.get('especialidade', '')
+        status = filtros.get('status', 'todos')
+        
+        # Obter a planilha
+        planilha_path = get_latest_excel_file()
+        
+        if not planilha_path:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhuma planilha disponível para consulta'
+            })
+        
+        df = pd.read_excel(planilha_path)
+        columns = detect_columns(df)
+        
+        # Verificar se temos as colunas necessárias
+        if 'ar' not in columns or 'ordem' not in columns:
+            return jsonify({
+                'success': False,
+                'message': 'A planilha não contém as colunas necessárias para consulta de ARs'
+            })
+        
+        # Aplicar filtros
+        filtered_df = df.copy()
+        
+        # Filtro por número de AR
+        if numero_ar:
+            ar_col = columns['ar']
+            filtered_df = filtered_df[filtered_df[ar_col].astype(str).str.contains(numero_ar, case=False, na=False)]
+        
+        # Filtro por número de ordem
+        if numero_ordem:
+            ordem_col = columns['ordem']
+            filtered_df = filtered_df[filtered_df[ordem_col].astype(str).str.contains(numero_ordem, case=False, na=False)]
+        
+        # Filtro por descrição
+        if descricao and 'descricao' in columns:
+            desc_col = columns['descricao']
+            filtered_df = filtered_df[filtered_df[desc_col].astype(str).str.contains(descricao, case=False, na=False)]
+        
+        # Filtro por data
+        if 'data' in columns and (data_inicio or data_fim):
+            data_col = columns['data']
+            
+            if data_inicio:
+                try:
+                    data_inicio = datetime.datetime.strptime(data_inicio, '%Y-%m-%d').date()
+                    filtered_df = filtered_df[pd.to_datetime(filtered_df[data_col], errors='coerce').dt.date >= data_inicio]
+                except:
+                    pass
+            
+            if data_fim:
+                try:
+                    data_fim = datetime.datetime.strptime(data_fim, '%Y-%m-%d').date()
+                    filtered_df = filtered_df[pd.to_datetime(filtered_df[data_col], errors='coerce').dt.date <= data_fim]
+                except:
+                    pass
+        
+        # Filtro por especialidade
+        if especialidade and 'ESPECIALIDADES' in df.columns:
+            filtered_df = filtered_df[filtered_df['ESPECIALIDADES'].astype(str).str.contains(especialidade, case=False, na=False)]
+        
+        # Filtro por status
+        if status != 'todos':
+            ar_col = columns['ar']
+            if status == 'emitidas':
+                filtered_df = filtered_df[filtered_df[ar_col].notna() & (filtered_df[ar_col] != "ELABORAR AR")]
+            elif status == 'pendentes':
+                filtered_df = filtered_df[filtered_df[ar_col] == "ELABORAR AR"]
+        
+        # Se não houver resultados, retornar mensagem
+        if len(filtered_df) == 0:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhum resultado encontrado para exportar.'
+            })
+        
+        # Preparar o DataFrame para exportação
+        export_df = filtered_df.copy()
+        
+        # Garantir que todas as colunas importantes estejam incluídas
+        important_columns = []
+        
+        # Adicionar colunas mapeadas
+        for col_type, col_name in columns.items():
+            if col_name in export_df.columns:
+                important_columns.append(col_name)
+        
+        # Adicionar outras colunas relevantes que podem não estar no mapeamento
+        other_columns = ['ESPECIALIDADES', 'PBS', 'Tipo PT/PTT', 'Criticidade PMIC', 'Gerência Emitente']
+        for col in other_columns:
+            if col in export_df.columns and col not in important_columns:
+                important_columns.append(col)
+        
+        # Reordenar colunas (colunas importantes primeiro, depois o resto)
+        remaining_columns = [col for col in export_df.columns if col not in important_columns]
+        export_df = export_df[important_columns + remaining_columns]
+        
+        # Gerar um nome de arquivo único
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'consulta_ars_{timestamp}.xlsx'
+        output_path = os.path.join('uploads', filename)
+        
+        # Criar pasta de uploads se não existir
+        os.makedirs('uploads', exist_ok=True)
+        
+        # Salvar o DataFrame como Excel
+        with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+            export_df.to_excel(writer, index=False, sheet_name='Consulta_ARs')
+            
+            # Ajustar largura das colunas
+            worksheet = writer.sheets['Consulta_ARs']
+            for i, column in enumerate(export_df.columns):
+                max_length = max(
+                    export_df[column].astype(str).map(len).max(),
+                    len(str(column))
+                ) + 2
+                worksheet.column_dimensions[worksheet.cell(1, i+1).column_letter].width = min(max_length, 50)
+        
+        # Retornar o link para download
+        return jsonify({
+            'success': True,
+            'download_url': url_for('download_file', filename=filename),
+            'message': 'Arquivo Excel gerado com sucesso!'
+        })
+        
+    except Exception as e:
+        print(f"Erro ao exportar ARs para Excel: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao gerar arquivo Excel: {str(e)}'
+        })
+
+
+"""@app.route('/download/<filename>')
+def download_file(filename):
+    
+    if not session.get('username'):
+        return redirect(url_for('login'))
+    
+    return send_from_directory(
+        directory='uploads',
+        path=filename,
+        as_attachment=True
+    )"""
+
+@app.route('/elaborar_ar')
+def elaborar_ar_page():
+    """
+    Página para elaboração de AR
+    """
+    if not session.get('username'):
+        return redirect(url_for('login'))
+    
+    # Obter o número da ordem da query string
+    ordem = request.args.get('ordem', '')
+    
+    return render_template(
+        'elaborar_ar.html',
+        active_page='elaborar_ar',
+        ordem=ordem,
+        today_date=datetime.datetime.now().strftime('%d/%m/%Y'),
+        current_year=datetime.datetime.now().year,
+        breadcrumb=[
+            {'label': 'Consultar ARs', 'url': url_for('consultar_ar_page')},
+            {'label': 'Elaborar AR', 'url': '#'}
+        ]
+    )
+
+
 # Rota raiz - redireciona para login ou dashboard
 @app.route('/')
 def index():
@@ -3236,5 +4206,5 @@ def main():
     app.run(debug=True)
 
 if __name__ == "__main__":
-
-  app.run(debug=True)
+    app.run(debug=True)
+    #app.run(host='0.0.0.0', port=5000, debug=False)
