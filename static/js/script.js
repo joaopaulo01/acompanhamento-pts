@@ -146,6 +146,98 @@ function hideModal() {
     const modal = document.getElementById('modal-overlay');
     modal.classList.remove('active');
 }
+function voltarDashboard() {
+    window.location.href = '/dashboard';
+}
+
+function printPT(ordem) {
+    showLoader("Preparando impressão...");
+    
+    fetch(`/imprimir_pt/${ordem}`, {
+        method: 'GET'
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        hideLoader();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+    })
+    .catch(error => {
+        hideLoader();
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Não foi possível gerar o PDF para impressão.');
+    });
+}
+
+function retryPT(ordem) {
+    showModal(
+        'Tentar Novamente',
+        `<p>Deseja tentar elaborar novamente a PT para a ordem ${ordem}?</p>`,
+        () => {
+            showLoader("Reprocessando PT...");
+        
+            fetch(`/reprocessar_pt/${ordem}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                if (data.success) {
+                    showNotification('success', 'Sucesso', 'A PT foi reprocessada com sucesso!');
+                // Atualiza a página para mostrar o novo status
+                    window.location.reload();
+                } else {
+                    showNotification('error', 'Erro', data.message || 'Erro ao reprocessar a PT.');
+                }
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Erro:', error);
+                showNotification('error', 'Erro', 'Ocorreu um erro ao tentar reprocessar a PT.');
+            });
+        }
+    );
+}
+
+function viewError(ordem) {
+    showLoader("Carregando detalhes do erro...");
+    
+    fetch(`/erro_pt/${ordem}`, {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoader();
+        
+        const errorContent = document.createElement('div');
+        errorContent.className = 'error-details';
+        
+        errorContent.innerHTML = `
+            <div class="error-section">
+                <h4>Detalhes do Erro</h4>
+                <div class="error-message">${data.message}</div>
+                <div class="error-timestamp">Ocorrido em: ${data.timestamp}</div>
+            </div>
+            <div class="error-section">
+                <h4>Log Completo</h4>
+                <pre class="error-log">${data.log}</pre>
+            </div>
+            
+            <div class="error-section">
+                <h4>Sugestões</h4>
+                <ul class="error-suggestions">
+                ${data.suggestions.map(s => `<li>${s}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        showModal(`Erro na PT - ${ordem}`, errorContent);
+    })
+    .catch(error => {
+        hideLoader();
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Não foi possível carregar os detalhes do erro.');
+    });
+}
 
 // Funções específicas da aplicação
 function filtrarResultados() {
@@ -191,6 +283,68 @@ function filtrarResultados() {
     } else if (noResultsRow) {
         noResultsRow.remove();
     }
+}
+
+function viewPT(ordem) {
+    showLoader("Carregando detalhes da PT...");
+    
+    fetch(`/detalhes_pt/${ordem}`, {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoader();
+        
+        const detailsContent = document.createElement('div');
+        detailsContent.className = 'pt-details';
+        
+        detailsContent.innerHTML = `
+            <div class="details-section">
+                <h4>Informações Gerais</h4>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Ordem</div>
+                        <div class="detail-value">${data.ordem}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Número PT</div>
+                        <div class="detail-value">${data.numero_pt || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Número AR</div>
+                        <div class="detail-value">${data.numero_ar || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Data</div>
+                        <div class="detail-value">${data.data}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge status-${data.status.toLowerCase()}">${data.status}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="details-section">
+                <h4>Descrição da Atividade</h4>
+                <p>${data.descricao}</p>
+            </div>
+        
+            <div class="details-section">
+                <h4>Recomendações</h4>
+                <p>${data.recomendacoes || 'Nenhuma recomendação específica.'}</p>
+            </div>
+        `;
+        
+        showModal(`Detalhes da PT - ${data.ordem}`, detailsContent);
+    })
+    .catch(error => {
+        hideLoader();
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Não foi possível carregar os detalhes da PT.');
+    });
 }
 
 function elaborarPTsComProgresso() {
