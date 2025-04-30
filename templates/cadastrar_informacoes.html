@@ -1,0 +1,599 @@
+Vou criar uma página de cadastro de informações com múltiplas funcionalidades. Vou dividir em seções para melhor organização:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h2>Cadastro de Informações</h2>
+    </div>
+
+    <!-- Tabs de navegação -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab active" data-tab="requisitantes">Requisitantes</button>
+            <button class="tab" data-tab="localizacoes">Localizações</button>
+            <button class="tab" data-tab="equipamentos">Equipamentos</button>
+            <button class="tab" data-tab="importacao">Importação PDF</button>
+        </div>
+
+        <!-- Tab Requisitantes -->
+        <div id="requisitantes" class="tab-content active">
+            <div class="section-header">
+                <h3>Cadastro de Requisitantes</h3>
+                <button class="button button-success" onclick="showAddRequisitanteModal()">
+                    <i class="fas fa-plus"></i> Novo Requisitante
+                </button>
+            </div>
+
+            <div class="filter-section">
+                <select id="filterEspecialidade" onchange="filtrarRequisitantes()">
+                    <option value="">Todas Especialidades</option>
+                    <option value="ELETRICA">Elétrica</option>
+                    <option value="MECANICA">Mecânica</option>
+                    <option value="INSTRUMENTACAO">Instrumentação</option>
+                    <option value="CIVIL">Civil</option>
+                </select>
+                <input type="text" 
+                       id="searchRequisitante" 
+                       placeholder="Buscar requisitante..." 
+                       onkeyup="filtrarRequisitantes()">
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Especialidade</th>
+                            <th>Matrícula</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requisitantesTable">
+                        <!-- Dados serão carregados via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab Localizações -->
+        <div id="localizacoes" class="tab-content">
+            <div class="section-header">
+                <h3>Cadastro de Localizações</h3>
+                <button class="button button-success" onclick="showAddLocalizacaoModal()">
+                    <i class="fas fa-plus"></i> Nova Localização
+                </button>
+            </div>
+
+            <div class="filter-section">
+                <select id="filterArea" onchange="filtrarLocalizacoes()">
+                    <option value="">Todas Áreas</option>
+                    <option value="OPERACAO">Operação</option>
+                    <option value="UTILIDADES">Utilidades</option>
+                    <option value="ADMINISTRATIVA">Administrativa</option>
+                </select>
+                <input type="text" 
+                       id="searchLocalizacao" 
+                       placeholder="Buscar localização..." 
+                       onkeyup="filtrarLocalizacoes()">
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Área</th>
+                            <th>Unidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="localizacoesTable">
+                        <!-- Dados serão carregados via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab Importação PDF -->
+        <div id="importacao" class="tab-content">
+            <div class="section-header">
+                <h3>Importação de Dados via PDF</h3>
+            </div>
+
+            <div class="import-container">
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-file-pdf"></i>
+                    <p>Arraste e solte arquivos PDF aqui ou clique para selecionar</p>
+                    <input type="file" id="fileInput" accept=".pdf" multiple hidden>
+                </div>
+
+                <div class="import-options">
+                    <h4>Opções de Importação</h4>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="importRequisitantes" checked>
+                            Requisitantes
+                        </label>
+                        <label>
+                            <input type="checkbox" id="importLocalizacoes" checked>
+                            Localizações
+                        </label>
+                        <label>
+                            <input type="checkbox" id="importEquipamentos" checked>
+                            Equipamentos
+                        </label>
+                    </div>
+                    <button class="button" onclick="iniciarImportacao()">
+                        <i class="fas fa-file-import"></i> Iniciar Importação
+                    </button>
+                </div>
+
+                <div class="import-progress hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p class="progress-text">Processando... 0%</p>
+                </div>
+
+                <div class="import-results hidden">
+                    <h4>Resultados da Importação</h4>
+                    <div class="results-content">
+                        <!-- Resultados serão inseridos aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar/Editar Requisitante -->
+<div id="requisitanteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4>Adicionar Requisitante</h4>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="requisitanteForm">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="especialidade">Especialidade</label>
+                    <select id="especialidade" name="especialidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="ELETRICA">Elétrica</option>
+                        <option value="MECANICA">Mecânica</option>
+                        <option value="INSTRUMENTACAO">Instrumentação</option>
+                        <option value="CIVIL">Civil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="matricula">Matrícula</label>
+                    <input type="text" id="matricula" name="matricula" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="ATIVO">Ativo</option>
+                        <option value="INATIVO">Inativo</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="button button-outline" onclick="closeModal('requisitanteModal')">Cancelar</button>
+            <button class="button" onclick="salvarRequisitante()">Salvar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Gerenciamento de Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        // Remove classe active de todas as tabs
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Adiciona classe active na tab clicada
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Funções para Requisitantes
+async function carregarRequisitantes() {
+    try {
+        const response = await fetch('/api/requisitantes');
+        const data = await response.json();
+        
+        const tbody = document.getElementById('requisitantesTable');
+        tbody.innerHTML = '';
+        
+        data.forEach(req => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${req.nome}</td>
+                    <td>${req.especialidade}</td>
+                    <td>${req.matricula}</td>
+                    <td>
+                        <span class="status-badge ${req.status.toLowerCase()}">
+                            ${req.status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-button" onclick="editarRequisitante(${req.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-button" onclick="confirmarExclusao(${req.id}, 'requisitante')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error('Erro ao carregar requisitantes:', error);
+        showNotification('error', 'Erro', 'Falha ao carregar requisitantes');
+    }
+}
+
+// Importação de PDF
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+    if (files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        mostrarArquivosSelecionados(files);
+    }
+});
+
+function mostrarArquivosSelecionados(files) {
+    const fileList = document.createElement('div');
+    fileList.className = 'selected-files';
+    
+    files.forEach(file => {
+        fileList.innerHTML += `
+            <div class="file-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>${file.name}</span>
+                <span class="file-size">${(file.size / 1024).toFixed(2)} KB</span>
+            </div>
+        `;
+    });
+    
+    dropZone.innerHTML = '';
+    dropZone.appendChild(fileList);
+}
+
+// Continuação do script anterior...
+
+async function iniciarImportacao() {
+    const files = fileInput.files;
+    if (!files.length) {
+        showNotification('warning', 'Atenção', 'Selecione pelo menos um arquivo PDF');
+        return;
+    }
+
+    const progressBar = document.querySelector('.import-progress');
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    
+    progressBar.classList.remove('hidden');
+    
+    try {
+        for (let i = 0; i < files.length; i++) {
+            const formData = new FormData();
+            formData.append('file', files[i]);
+            formData.append('options', JSON.stringify({
+                importRequisitantes: document.getElementById('importRequisitantes').checked,
+                importLocalizacoes: document.getElementById('importLocalizacoes').checked,
+                importEquipamentos: document.getElementById('importEquipamentos').checked
+            }));
+
+            const response = await fetch('/api/import-pdf', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            // Atualiza a barra de progresso
+            const progress = ((i + 1) / files.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `Processando... ${Math.round(progress)}%`;
+
+            // Mostra resultados parciais
+            mostrarResultadosImportacao(data);
+        }
+
+        showNotification('success', 'Sucesso', 'Importação concluída com sucesso!');
+    } catch (error) {
+        console.error('Erro na importação:', error);
+        showNotification('error', 'Erro', 'Falha na importação do arquivo');
+    } finally {
+        progressBar.classList.add('hidden');
+    }
+}
+
+function mostrarResultadosImportacao(data) {
+    const resultsContainer = document.querySelector('.import-results');
+    const resultsContent = resultsContainer.querySelector('.results-content');
+    
+    resultsContainer.classList.remove('hidden');
+    
+    const resultHtml = `
+        <div class="import-result-item">
+            <h5>${data.fileName}</h5>
+            <div class="result-stats">
+                <div class="stat">
+                    <span class="label">Requisitantes:</span>
+                    <span class="value">${data.stats.requisitantes} importados</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Localizações:</span>
+                    <span class="value">${data.stats.localizacoes} importadas</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Equipamentos:</span>
+                    <span class="value">${data.stats.equipamentos} importados</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultsContent.insertAdjacentHTML('beforeend', resultHtml);
+}
+
+// Funções de filtro
+function filtrarRequisitantes() {
+    const especialidade = document.getElementById('filterEspecialidade').value;
+    const busca = document.getElementById('searchRequisitante').value.toLowerCase();
+    
+    const rows = document.getElementById('requisitantesTable').getElementsByTagName('tr');
+    
+    Array.from(rows).forEach(row => {
+        const especialidadeCell = row.cells[1].textContent;
+        const nomeCell = row.cells[0].textContent.toLowerCase();
+        
+        const matchesEspecialidade = !especialidade || especialidadeCell === especialidade;
+        const matchesBusca = nomeCell.includes(busca);
+        
+        row.style.display = matchesEspecialidade && matchesBusca ? '' : 'none';
+    });
+}
+
+// Funções de Modal
+function showAddRequisitanteModal() {
+    document.getElementById('requisitanteForm').reset();
+    document.getElementById('requisitanteModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Função para salvar requisitante
+async function salvarRequisitante() {
+    const form = document.getElementById('requisitanteForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/requisitantes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        });
+        
+        if (!response.ok) throw new Error('Erro ao salvar requisitante');
+        
+        showNotification('success', 'Sucesso', 'Requisitante salvo com sucesso!');
+        closeModal('requisitanteModal');
+        await carregarRequisitantes();
+    } catch (error) {
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Falha ao salvar requisitante');
+    }
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    carregarRequisitantes();
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Estilos para a página de cadastro */
+.page-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+/* Tabs */
+.tabs-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 15px 25px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab.active {
+    color: var(--petrobras-green);
+    border-bottom: 2px solid var(--petrobras-green);
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Seções */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Filtros */
+.filter-section {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-section select,
+.filter-section input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Tabelas */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* Área de Upload */
+.drop-zone {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.drop-zone.dragover {
+    border-color: var(--petrobras-green);
+    background: rgba(0, 152, 70, 0.05);
+}
+
+.drop-zone i {
+    font-size: 48px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* Resultados da Importação */
+.import-results {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.import-result-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.result-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+/* Progress Bar */
+.progress-bar {
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--petrobras-green);
+    transition: width 0.3s;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.ativo {
+    background: #e3fcef;
+    color: #0a6c3b;
+}
+
+.status-badge.inativo {
+    background: #fee7e7;
+    color: #c53030;
+}
+
+/* Utilities */
+.hidden {
+    display: none !important;
+}
+</style>
+{% endblock %}

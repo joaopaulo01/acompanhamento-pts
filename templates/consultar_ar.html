@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultar Análises de Risco{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-search"></i> Consultar Análises de Risco</h1>
+    </div>
+    <div class="breadcrumb-container">
+        <ol class="breadcrumb">
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            {% for item in breadcrumb %}
+            <li {% if loop.last %}class="active"{% endif %}>
+                {% if not loop.last %}<a href="{{ item.url }}">{{ item.label }}</a>{% else %}{{ item.label }}{% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ ar_stats.total }}</div>
+        <div class="stat-label">ARs Totais</div>
+        <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ ar_stats.emitidas }}</div>
+        <div class="stat-label">ARs Emitidas</div>
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ ar_stats.pendentes }}</div>
+        <div class="stat-label">ARs Pendentes</div>
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ ar_stats.expiradas }}</div>
+        <div class="stat-label">ARs Expiradas</div>
+        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ ar_stats.hoje }}</div>
+        <div class="stat-label">ARs Hoje</div>
+        <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Filtros de Consulta</h2>
+        <button id="toggle-filters" class="button button-sm">
+            <i class="fas fa-filter"></i> Mostrar/Ocultar Filtros
+        </button>
+    </div>
+    <div id="filter-container" class="card-body">
+        <form id="ar-search-form" class="form-grid">
+            <div class="form-group">
+                <label for="numero_ar">Número da AR</label>
+                <input type="text" id="numero_ar" name="numero_ar" class="form-control" placeholder="Ex: 12345">
+            </div>
+            <div class="form-group">
+                <label for="numero_ordem">Número da Ordem</label>
+                <input type="text" id="numero_ordem" name="numero_ordem" class="form-control" placeholder="Ex: 67890">
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" name="descricao" class="form-control" placeholder="Palavras-chave na descrição">
+            </div>
+            <div class="form-group">
+                <label for="data_inicio">Data Início</label>
+                <input type="date" id="data_inicio" name="data_inicio" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="data_fim">Data Fim</label>
+                <input type="date" id="data_fim" name="data_fim" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="especialidade">Especialidade</label>
+                <input type="text" id="especialidade" name="especialidade" class="form-control" placeholder="Ex: Mecânica, Elétrica">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="todos">Todos</option>
+                    <option value="emitidas">Emitidas</option>
+                    <option value="pendentes">Pendentes</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="btn-search" class="button">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <button type="button" id="btn-clear" class="button button-outline">
+                    <i class="fas fa-times"></i> Limpar
+                </button>
+                <button type="button" id="btn-export" class="button button-secondary" disabled>
+                    <i class="fas fa-file-excel"></i> Exportar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h2>Resultados da Consulta</h2>
+        <div class="card-actions">
+            <span id="result-count" class="badge">0 resultados</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="results-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Número AR</th>
+                        <th>Ordem</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Especialidade</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- Resultados serão inseridos aqui via JavaScript -->
+                </tbody>
+            </table>
+            <div id="no-results" class="empty-state hidden">
+                <i class="fas fa-search"></i>
+                <p>Nenhum resultado encontrado</p>
+                <small>Tente ajustar os critérios de busca</small>
+            </div>
+            <div id="initial-state" class="empty-state">
+                <i class="fas fa-filter"></i>
+                <p>Use os filtros acima para buscar Análises de Risco</p>
+                <small>Os resultados aparecerão nesta tabela</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes da AR -->
+<div id="ar-details-modal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2>Detalhes da Análise de Risco <span id="modal-ar-number"></span></h2>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="ar-details-content">
+                <div class="detail-loading">
+                    <div class="spinner"></div>
+                    <p>Carregando detalhes...</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btn-print-ar" class="button">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <button class="button button-outline modal-close-btn">Fechar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Função para mostrar/ocultar filtros
+document.getElementById('toggle-filters').addEventListener('click', function() {
+    const filterContainer = document.getElementById('filter-container');
+    filterContainer.classList.toggle('hidden');
+});
+
+// Função para buscar ARs
+document.getElementById('btn-search').addEventListener('click', function() {
+    buscarARs();
+});
+
+// Função para limpar filtros
+document.getElementById('btn-clear').addEventListener('click', function() {
+    document.getElementById('ar-search-form').reset();
+    document.getElementById('initial-state').classList.remove('hidden');
+    document.getElementById('no-results').classList.add('hidden');
+    document.getElementById('results-body').innerHTML = '';
+    document.getElementById('result-count').textContent = '0 resultados';
+    document.getElementById('btn-export').disabled = true;
+});
+
+// Função para exportar resultados
+document.getElementById('btn-export').addEventListener('click', function() {
+    exportarResultados();
+});
+
+// Função principal para buscar ARs
+function buscarARs() {
+    // Coletar dados do formulário
+    const formData = {
+        numero_ar: document.getElementById('numero_ar').value.trim(),
+        numero_ordem: document.getElementById('numero_ordem').value.trim(),
+        descricao: document.getElementById('descricao').value.trim(),
+        data_inicio: document.getElementById('data_inicio').value.trim(),
+        data_fim: document.getElementById('data_fim').value.trim(),
+        especialidade: document.getElementById('especialidade').value.trim(),
+        status: document.getElementById('status').value
+    };
+    
+    showLoader("Buscando análises de risco...");
+    
+    fetch('/buscar_ars', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoader();
+        
+        if (data.success) {
+            exibirResultados(data.resultados);
+            document.getElementById('result-count').textContent = `${data.total} resultado${data.total !== 1 ? 's' : ''}`;
+            document.getElementById('btn-export').disabled = data.total === 0;
+        } else {
+            showNotification('error', 'Erro', data.message || 'Ocorreu um erro ao processar a consulta.');
+            document.getElementById('initial-state').classList.add('hidden');
+            document.getElementById('no-results').classList.remove('hidden');
+            document.getElementById('results-body').innerHTML = '';
+            document.getElementById('result-count').textContent = '0 resultados';
+            document.getElementById('btn-export').disabled = true;
+        }
+    })
+    .catch(error => {
+        hideLoader();
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Ocorreu um erro ao processar a consulta.');
+    });
+}
+
+// Função para exibir os resultados na tabela
+function exibirResultados(resultados) {
+    const tbody = document.getElementById('results-body');
+    tbody.innerHTML = '';
+    
+    document.getElementById('initial-state').classList.add('hidden');
+    
+    if (resultados.length === 0) {
+        document.getElementById('no-results').classList.remove('hidden');
+        return;
+    }
+    
+    document.getElementById('no-results').classList.add('hidden');
+    
+    resultados.forEach(ar => {
+        const row = document.createElement('tr');
+        
+        // Definir classe com base no status
+        if (ar.status === 'Pendente') {
+            row.classList.add('status-pending');
+        } else if (ar.status === 'Expirada') {
+            row.classList.add('status-expired');
+        }
+        
+        row.innerHTML = `
+            <td>${ar.numero_ar}</td>
+            <td>${ar.ordem}</td>
+            <td title="${ar.descricao}">${ar.descricao}</td>
+            <td>${ar.data}</td>
+            <td>${ar.especialidade}</td>
+            <td>
+                <span class="status-badge ${ar.status === 'Pendente' ? 'status-pending' : 'status-success'}">
+                    ${ar.status}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view-details" data-ar="${ar.numero_ar}" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${ar.status !== 'Pendente' ? `
+                    <button class="btn-print" data-ar="${ar.numero_ar}" title="Imprimir AR">
+                        <i class="fas fa-print"></i>
+                    </button>
+                    ` : `
+                    <button class="btn-edit" data-ar="${ar.numero_ar}" title="Elaborar AR">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    `}
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+    
+    // Adicionar event listeners para os botões de ação
+    document.querySelectorAll('.btn-view-details').forEach(button => {
+        button.addEventListener('click', function() {
+            const arNumber = this.getAttribute('data-ar');
+            abrirDetalhesAR(arNumber);
+        });
+    });
+    
+    document.querySelectorAll('.btn-print').forEach(button => {
+        button.addEventListener('click', function() {
+            const arNumber = this.getAttribute('data-ar');
+            imprimirAR(arNumber);
+        });
+    });
+    
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', function() {
+            const arNumber = this.getAttribute('data-ar');
+            elaborarAR(arNumber);
+        });
+    });
+}
+
+// Função para abrir o modal de detalhes da AR
+function abrirDetalhesAR(numeroAR) {
+    const modal = document.getElementById('ar-details-modal');
+    const modalArNumber = document.getElementById('modal-ar-number');
+    const detailsContent = document.getElementById('ar-details-content');
+    
+    modalArNumber.textContent = numeroAR;
+    detailsContent.innerHTML = `
+        <div class="detail-loading">
+            <div class="spinner"></div>
+            <p>Carregando detalhes...</p>
+        </div>
+    `;
+    
+    // Mostrar o modal
+    modal.classList.add('active');
+    
+    // Buscar detalhes da AR
+    fetch(`/detalhes_ar/${numeroAR}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                exibirDetalhesAR(data.detalhes);
+            } else {
+                detailsContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>${data.message || 'Não foi possível carregar os detalhes desta AR.'}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            detailsContent.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Ocorreu um erro ao carregar os detalhes da AR.</p>
+                </div>
+            `;
+        });
+}
+
+// Função para exibir os detalhes da AR no modal
+function exibirDetalhesAR(detalhes) {
+    const detailsContent = document.getElementById('ar-details-content');
+    
+    // Criar HTML para os detalhes
+    let html = '<div class="ar-details">';
+    
+    // Seção de informações básicas
+    html += '<div class="detail-section">';
+    html += '<h3>Informações Básicas</h3>';
+    html += '<div class="detail-grid">';
+    
+    // Adicionar campos básicos
+    const basicFields = [
+        { key: 'numero_ar', label: 'Número AR' },
+        { key: 'ordem', label: 'Ordem de Serviço' },
+        { key: 'status', label: 'Status' },
+        { key: 'data', label: 'Data' },
+        { key: 'especialidade', label: 'Especialidade' }
+    ];
+    
+    basicFields.forEach(field => {
+        if (detalhes[field.key]) {
+            html += `
+                <div class="detail-item">
+                    <div class="detail-label">${field.label}:</div>
+                    <div class="detail-value">${detalhes[field.key]}</div>
+                </div>
+            `;
+        }
+    });
+    
+    html += '</div>'; // Fim da grade de informações básicas
+    html += '</div>'; // Fim da seção de informações básicas
+    
+    // Seção de descrição (se existir)
+    if (detalhes.descricao) {
+        html += '<div class="detail-section">';
+        html += '<h3>Descrição</h3>';
+        html += `<div class="detail-text">${detalhes.descricao}</div>`;
+        html += '</div>';
+    }
+    
+    // Seção para outras informações
+    html += '<div class="detail-section">';
+    html += '<h3>Informações Adicionais</h3>';
+    html += '<div class="detail-grid">';
+    
+    // Adicionar todos os outros campos que não foram incluídos nas seções anteriores
+    Object.entries(detalhes).forEach(([key, value]) => {
+        // Ignorar campos já incluídos e campos vazios
+        const isBasicField = basicFields.some(field => field.key === key);
+        const isDescriptionField = key === 'descricao';
+        
+        if (!isBasicField && !isDescriptionField && value) {
+            // Formatar o nome da chave para exibição
+            const label = key
+                .replace(/_/g, ' ')
+                .replace(/b\w/g, l => l.toUpperCase());
+            
+            html += `
+                <div class="detail-item">
+                    <div class="detail-label">${label}:</div>
+                    <div class="detail-value">${value}</div>
+                </div>
+            `;
+        }
+    });
+    
+    html += '</div>'; // Fim da grade de informações adicionais
+    html += '</div>'; // Fim da seção de informações adicionais
+    
+    html += '</div>'; // Fim dos detalhes da AR
+    
+    detailsContent.innerHTML = html;
+}
+
+// Função para imprimir AR
+function imprimirAR(numeroAR) {
+    showNotification('info', 'Impressão', `Preparando impressão da AR ${numeroAR}...`);
+    
+    // Aqui você implementaria a lógica para imprimir a AR
+    // Pode ser um redirecionamento para uma página de impressão específica
+    // ou uma chamada para o backend que gera um PDF
+    
+    // Exemplo simples (apenas para demonstração):
+    setTimeout(() => {
+        showNotification('success', 'Impressão', `AR ${numeroAR} enviada para impressão.`);
+    }, 1500);
+}
+
+// Função para elaborar AR
+function elaborarAR(numeroAR) {
+    showNotification('info', 'Elaborar AR', `Redirecionando para elaboração da AR...`);
+    
+    // Redirecionar para a página de elaboração de AR
+    window.location.href = `/elaborar_ar?ordem=${numeroAR}`;
+}
+
+// Função para exportar resultados para Excel
+// Atualizar a função de exportação de resultados
+function exportarResultados() {
+    // Coletar os filtros atuais
+    const formData = {
+        numero_ar: document.getElementByI').value.trim(),
+        numero_ordem: document.getElementById('numero_ordem').value.trim(),
+        descricao: document.getElementById('descricao').value.trim(),
+        data_inicio: document.getElementById('data_inicio').value.trim(),
+        data_fim: document.getElementById('data_fim').value.trim(),
+        especialidade: document.getElementById('especialidade').value.trim(),
+        status: document.getElementById('status').value
+    };
+    
+    showLoader("Gerando arquivo Excel...");
+    
+    fetch('/exportar_ars', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoader();
+        
+        if (data.success) {
+            showNotification('success', 'Excel Gerado', data.message);
+            
+            // Iniciar o download do arquivo
+            const downloadLink = document.createElement('a');
+            downloadLink.href = data.download_url;
+            downloadLink.download = 'consulta_ars.xlsx';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        } else {
+            showNotification('error', 'Erro', data.message || 'Ocorreu um erro ao gerar o arquivo Excel.');
+        }
+    })
+    .catch(error => {
+        hideLoader();
+        console.error('Erro:', error);
+        showNotification('error', 'Erro', 'Ocorreu um erro ao gerar o arquivo Excel.');
+    });
+}
+
+// Configuração do modal
+document.querySelectorAll('.modal-close, .modal-close-btn').forEach(element => {
+    element.addEventListener('click', function() {
+        document.getElementById('ar-details-modal').classList.remove('active');
+    });
+});
+
+// Fechar o modal quando clicar fora dele
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('ar-details-modal');
+    if (event.target === modal) {
+        modal.classList.remove('active');
+    }
+});
+
+// Configurar botão de impressão no modal
+document.getElementById('btn-print-ar').addEventListener('click', function() {
+    const numeroAR = document.getElementById('modal-ar-number').textContent;
+    imprimirAR(numeroAR);
+});
+
+// Habilitar busca com a tecla Enter nos campos de filtro
+document.querySelectorAll('#ar-search-form input').forEach(input => {
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarARs();
+        }
+    });
+});
+
+// Inicializar datas com valores padrão (opcional)
+const today = new Date();
+const oneMonthAgo = new Date();
+oneMonthAgo.setMonth(today.getMonth() - 1);
+
+// Formatar datas para o formato YYYY-MM-DD
+const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${day}/${month}/${year}`;
+};
+
+// Opcional: Pré-preencher campos de data
+// document.getElementById('data_inicio').value = formatDate(oneMonthAgo);
+// document.getElementById('data_fim').value = formatDate(today);
+</script>
+{% endblock %}

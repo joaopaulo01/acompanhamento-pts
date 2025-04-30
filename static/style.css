@@ -1,4 +1,5 @@
 
+
 :root {
   --petrobras-green: #009846;
   --petrobras-green-dark: #006633;
@@ -117,7 +118,7 @@ body {
 }
 
 .header img {
-    height: 90px;
+    height: 100px;
 }
 .text-button {
     background: none;
@@ -317,6 +318,11 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   color: #333;
 }
 
+.status-salva {
+  background-color: var(--petrobras-yellow);
+  color: #333;
+}
+
 .status-erro {
   background-color: #e74c3c;
   color: white;
@@ -342,13 +348,20 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   padding: 10px 15px;
 }
 
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+    width: 400px; /* Define a largura desejada para a coluna de descrição */
+    max-width: 400px;
+    word-wrap: break-word; /* Permite quebra de linha se o texto ultrapassar o limite */
+}
+
 .data-table tr:hover {
   background-color: rgba(0, 152, 70, 0.05);
 }
 
 .data-table .actions {
   display: flex;
-  gap: 8px;
+  
 }
 
 .data-table .action-button {
@@ -424,9 +437,17 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   flex-wrap: wrap;
 }
 
-.recent-activities, .upcoming-tasks {
-  flex: 1;
+.recent-activities {
+  flex: 0.5;
   min-width: 300px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.upcoming-tasks {
+  flex: 1;
+  min-width: 500px;
   background-color: white;
   border-radius: 8px;
   padding: 20px;
@@ -859,7 +880,9 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
 }
 
 .sidebar {
-  width: 250px;
+  width: 15%;
+  min-width: 80px; /* Garante uma largura mínima */
+  max-width: 200px; /* Limita a largura máxima */
   background-color: white;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   display: flex;
@@ -1368,6 +1391,232 @@ input[type=text]:focus, input[type=password]:focus, input[type=date]:focus, sele
   border: 1px solid #eee;
 }
 
+/* Estilos para a página de consultar AR */
+
+/* Formulário de filtros em grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Estilização da tabela de resultados */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-expired {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Botões de ação na tabela */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.action-buttons button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-view-details {
+    color: #0d6efd;
+}
+
+.btn-print {
+    color: #198754;
+}
+
+.btn-edit {
+    color: #fd7e14;
+}
+
+/* Estado vazio para a tabela */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #adb5bd;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.empty-state small {
+    font-size: 0.9rem;
+}
+
+/* Modal de detalhes da AR */
+.modal-lg {
+    max-width: 800px;
+}
+
+.detail-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #0d6efd;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    color: #721c24;
+}
+
+.error-message i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #dc3545;
+}
+
+/* Estilos para os detalhes da AR */
+.ar-details {
+    padding: 10px;
+}
+
+.detail-section {
+    margin-bottom: 25px;
+}
+
+.detail-section h3 {
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #343a40;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.detail-item {
+    margin-bottom: 10px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    color: #212529;
+}
+
+.detail-text {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    white-space: pre-line;
+    color: #212529;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
 
 .hidden {
     display: none;

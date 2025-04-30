@@ -86,7 +86,7 @@
           
           <div class="form-group">
             <label for="data">Data</label>
-            <input type="date" id="data" name="data" required>
+            <input type="text" id="data" name="data" required>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('data').value = `${dd}/${mm}/${yyyy}`;
     
     // Manipulação do arquivo selecionado
     const fileInput = document.getElementById('arquivo');
@@ -176,7 +176,7 @@
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('data').value = `${dd}/${mm}/${yyyy}`; 
   }
 
   function visualizarArquivo() {
@@ -190,10 +190,14 @@
     var area = document.getElementById('area').value;
     if (area === 'GAS NATURAL&ENERGIA') {
       document.getElementById('unidadeGasNatural').classList.remove('hidden');
+      document.getElementById('unidadeGas').disabled = false;
       document.getElementById('unidadeRefino').classList.add('hidden');
+      document.getElementById('unidadeRef').disabled = true;
     } else {
       document.getElementById('unidadeGasNatural').classList.add('hidden');
+      document.getElementById('unidadeGas').disabled = true;
       document.getElementById('unidadeRefino').classList.remove('hidden');
+      document.getElementById('unidadeRef').disabled = false;
     }
   }
 
@@ -218,7 +222,22 @@
     const senha = formData.get('senha');
     const empresa = formData.get('empresa');
     const area = formData.get('area');
-    const unidade = formData.get('unidade');
+    /*if area == "REFINO" {
+      const unidade = formData.get('unidadeRef');
+    } else {
+      const unidade = formData.get('unidadeGas');
+    }*/
+    let unidade;
+
+    if (area == "REFINO") {
+      unidade = formData.get('unidadeRef');
+    } else {
+      unidade = formData.get('unidadeGas');
+    }
+    formData.append('unidade_selecionada', unidade);
+    console.log("Unidade selecionada:", unidade)
+    //const unidade = formData.get('unidadeGas') || formData.get('unidadeRef');
+    // Verifica se o arquivo foi selecionado
     const arquivo = document.getElementById('arquivo').files[0];
 
     console.log("Dados do formulário:", {
@@ -229,6 +248,9 @@
       unidade: unidade,
       arquivo: arquivo ? arquivo.name : "não selecionado"
     });
+    console.log(formData.get('unidadeGas'));
+    console.log(formData.get('unidadeRef'));
+    console.log(formData.get('unidade'));
     
     if (!usuario || !senha || !empresa || !area || !unidade) {
       showNotification('warning', 'Campos Incompletos', 'Por favor, preencha todos os campos obrigatórios.');
@@ -260,40 +282,6 @@
     );
   }
 
-  /*function elaborarPTs() {
-    console.log("Função elaborarPTs chamada");
-    const formData = new FormData(document.getElementById('configForm'));
-    formData.append('action', 'elaborar_pts');
-    
-    showLoader("Elaborando PTs...");
-    
-    fetch('/processar_form', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Resposta do servidor não foi OK');
-        }
-        return response.json();
-    })
-    .then(data => {
-        hideLoader();
-        if (data.success) {
-            showNotification('success', 'Sucesso', data.message);
-            if (data.redirect) {
-                window.location.href = data.redirect;
-            }
-        } else {
-            showNotification('error', 'Erro', data.message);
-        }
-    })
-    .catch(error => {
-        hideLoader();
-        showNotification('error', 'Erro', 'Ocorreu um erro ao processar as permissões de trabalho.');
-        console.error('Erro:', error);
-    });
-  }*/
   function elaborarPTs() {
     console.log("Função elaborarPTs chamada");
     var formData = new FormData(document.getElementById('configForm'));
@@ -311,59 +299,31 @@
       body: formData
     })
     .then(response => {
+      console.log("Resposta do servidor:", response);
       if (response.ok) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let progress = 0;
-            
-        return new Promise((resolve, reject) => {
-          function readChunk() {
-            reader.read().then(({ value, done }) => {
-              if (done) {
-                resolve();
-                return;
-              }
-              
-              const chunk = decoder.decode(value, { stream: true });
-              
-              try {
-                const data = JSON.parse(chunk);
-                if (data.progress) {
-                  progress = data.progress;
-                  updateLoaderProgress(progress, data.message);
-                }
-              } catch (e) {
-                // Não é JSON ou está incompleto, ignorar
-              }
-                      
-              readChunk();
-            }).catch(reject);
-          }
-                
-          readChunk();
-        });
+        return response.json(); // Converte a resposta em JSON
       } else {
-        throw new Error('Resposta do servidor não ok');
+        console.warn("Resposta não está OK:", response.status);
+        throw new Error(`Erro no servidor: ${response.status}`);
       }
     })
     .then(data => {
-      console.log("Dados recebidos:", data);
-      hideLoader();
-      
-      if (data.success) {
+      console.log("Dados recebidos do servidor:", data);
+      if (data && data.success) {
         showNotification('success', 'Sucesso', data.message);
         if (data.redirect) {
           console.log("Redirecionando para:", data.redirect);
           window.location.href = data.redirect;
         }
       } else {
-        showNotification('error', 'Erro', data.message);
+        console.warn("Estrutura inesperada de resposta:", data);
+        showNotification('error', 'Erro', data.message || 'Erro desconhecido no servidor');
       }
+      hideLoader(); // Esconde o loader após a resposta
     })
     .catch(error => {
-      console.error('Erro:', error);
-      hideLoader();
-      showNotification('error', 'Erro', 'Ocorreu um erro ao processar as permissões de trabalho.');
+      console.error('Erro durante a execução:', error);
+      showNotification('error', 'Erro', error.message || 'Erro ao processar as permissões de trabalho.');
     });
   }
   

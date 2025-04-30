@@ -6,6 +6,17 @@
     <div class="dashboard-header">
         <h2>Dashboard de Permissões de Trabalho</h2>
         <div class="dashboard-actions">
+            <!--<form id="planilhaForm" enctype="multipart/form-data" style="display: inline;">
+                <div class="file-input-wrapper">
+                    <button type="button" class="file-input-button">
+                        <i class="fas fa-file-excel"></i> Selecionar Planilha
+                    </button>
+                    <input type="file" id="planilha" name="planilha" accept=".xlsx, .xls" onchange="uploadPlanilha()">
+                </div>
+            </form>
+            <button class="button button-outline" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button> -->
             <button class="button" onclick="elaborarPTs()">Nova PT</button>
             <button class="button button-blue" onclick="consultarAR()">Consultar AR</button>
         </div>
@@ -19,8 +30,8 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon">✅</div>
-            <div class="stat-number">{{ stats.pts_emitidas }}</div>
-            <div class="stat-label">PTs Emitidas</div>
+            <div class="stat-number">{{ stats.pts_salvas }}</div>
+            <div class="stat-label">PTs Salvas</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">⏱️</div>
@@ -44,7 +55,7 @@
                         <div class="activity-details">
                             <div class="activity-title">{{ activity.title }}</div>
                             <div class="activity-desc">{{ activity.description }}</div>
-                            <div class="activity-time">{{ activity.time }}</div>
+                            <span class="activity-time">{{ activity.time }}</span>
                         </div>
                     </div>
                 {% endfor %}
@@ -52,7 +63,7 @@
         </div>
     
         <div class="upcoming-tasks">
-            <h3>Próximas PTs</h3>
+            <h3>Programação de Permissões para Trabalho</h3>
             <table class="data-table">
                 <thead>
                     <tr>
@@ -60,6 +71,8 @@
                         <th>Descrição</th>
                         <th>Data</th>
                         <th>Status</th>
+                        <th>AR</th>
+                        <th>LIBRA</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -67,23 +80,25 @@
                     {% for pt in upcoming_pts %}
                         <tr>
                             <td>{{ pt.ordem }}</td>
-                            <td>{{ pt.descricao }}</td>
+                            <td title="{{ pt.descricao }}">{{ pt.descricao }}</td>
                             <td>{{ pt.data }}</td>
                             <td>
                                 <span class="status-badge status-{{ pt.status|lower }}">
                                     {{ pt.status }}
                                 </span>
                             </td>
+                            <td>{{ pt.ar }}</td>
+                            <td>{{ pt.libra }}</td>
                             <td class="actions">
                                 <button class="action-button" title="Visualizar" onclick="viewPT('{{ pt.ordem }}')">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button class="action-button" title="Editar" onclick="editPT('{{ pt.ordem }}')">
+                                <!--<button class="action-button" title="Editar" onclick="editPT('{{ pt.ordem }}')">
                                     <i class="fas fa-edit"></i>
-                                </button>
+                                </button> 
                                 <button class="action-button" title="Imprimir" onclick="printPT('{{ pt.ordem }}')">
                                     <i class="fas fa-print"></i>
-                                </button>
+                                </button> -->
                             </td>
                         </tr>
                     {% endfor %}

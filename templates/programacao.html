@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Programação Semanal</h2>
+        <div class="dashboard-actions">
+            <button class="button" onclick="elaborarPTs()">Nova PT</button>
+            <button class="button button-blue" onclick="consultarAR()">Consultar AR</button>
+        </div>
+    </div>
+  
+    <div class="dashboard-content">    
+        <div class="upcoming-tasks">
+            <h3>Programação de Permissões para Trabalho</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Especialidade</th>
+                        <th>Ordem</th>
+                        <th>Descrição</th>
+                        <th>PT Emitida</th>
+                        <th>Espaço Confinado</th>
+                        <th>LIBRA</th>
+                        <th>ARO</th>
+                        <th>Análise de Risco</th>
+                        <th>Observações</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pt in upcoming_pts %}
+                        <tr>
+                            <td>{{ pt.especialidade }}</td>
+                            <td>{{ pt.ordem }}</td>
+                            <td title="{{ pt.descricao }}">{{ pt.descricao }}</td>
+                            <td>
+                                <span class="status-badge status-{{ pt.status|lower }}">
+                                    {{ pt.status }}
+                                </span>
+                            </td>
+                            <td>{{ pt.espaco_confinado }}</td>
+                            <td>{{ pt.libra }}</td>
+                            <td>{{ pt.aro }}</td>
+                            <td>{{ pt.ar }}</td>
+                            <td>{{ pt.observacoes }}</td>
+                            <td>{{ pt.data }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

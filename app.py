@@ -25,6 +25,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 import threading
 import webbrowser
 import json
+import pypdf
 
 # Importações do módulo elaborador (assumindo que o módulo existe)
 from elaborador import (
@@ -2768,6 +2769,22 @@ def carregar_planilha():
         'success': False,
         'message': 'Nenhum arquivo foi selecionado.'
     })
+
+@app.route('/api/requisitantes', methods=['GET'])
+def get_requisitantes():
+    # Implementar lógica para buscar requisitantes do banco de dados
+    pass
+
+@app.route('/api/requisitantes', methods=['POST'])
+def add_requisitante():
+    # Implementar lógica para adicionar requisitante
+    pass
+
+@app.route('/api/import-pdf', methods=['POST'])
+def import_pdf():
+    # Implementar lógica para processar PDF
+    pass
+
 
 @app.route('/especialidades')
 def get_especialidades():
