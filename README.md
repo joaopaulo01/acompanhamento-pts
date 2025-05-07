@@ -29,7 +29,7 @@ O Sistema de Acompanhamento de PTs foi desenvolvido para otimizar o fluxo de tra
 
 1. Clone este repositório:
 ```bash
-git clone https://github.com/seu-usuario/acompanhamento-pts.git
+git clone https://github.com/joaopaulo01/acompanhamento-pts.git
 cd acompanhamento-pts
 ```
 
@@ -62,6 +62,9 @@ python app.py
 - Visão geral das PTs e ARs em andamento
 - Indicadores de desempenho e estatísticas
 - Acesso rápido às principais funcionalidades
+
+### Programação
+- Programação Semanal das PTs
 
 ### Elaboração de PTs
 - Preenchimento automático a partir de dados da planilha
